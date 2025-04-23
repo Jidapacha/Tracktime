@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ระบบลงเวลาพนักงาน</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt&display=swap" rel="stylesheet">
+  <!-- <script src="https://unpkg.com/html5-qrcode@2.3.10/html5-qrcode.min.js" ></script> -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+    body { font-family: 'Prompt', sans-serif; }
+    .section { display: none; }
+    .section.active { display: block; }
+  </style>
+  
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  
+  <script>
+    let qrScanner;
+    // สร้าง client
+    const supabase = window.supabase.createClient(
+      "https://ukdachhtnvhoxaospqls.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrZGFjaGh0bnZob3hhb3NwcWxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUzNDU1NDUsImV4cCI6MjA2MDkyMTU0NX0.tHns58dgK_OgGS4YWBt7SCA3Er7Pmw9JlECEH7pt5j8"
+    );
+
+    async function loadEmployeeInfo() {
+      await supabase.auth.refreshSession();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      console.log("อีเมลจาก Supabase Auth:", user.email);
+
+      const { data, error } = await supabase
+        .from('employees')
+        .select('*')
+        .eq('email', user.email) ; // filter เฉพาะ email ที่ตรงกับผู้ใช้
+      console.log(data);
+      console.log("ผลลัพธ์จาก DB:", data);
+      console.log("ข้อผิดพลาด (ถ้ามี):", error);
+      console.log("ผู้ใช้ที่กำลัง login:", user.email);
+
+      if (userError || !user) {
+        document.getElementById('employee').innerHTML = `<p>ไม่สามารถโหลดข้อมูลผู้ใช้ได้</p>`;
+        console.error("User error:", userError);
+        return;
+      }
+      
+      if (error) {
+        console.error("เกิดข้อผิดพลาดในการดึงข้อมูลพนักงาน:", error);
+        document.getElementById('employee').innerHTML = `<p>ไม่สามารถโหลดข้อมูลพนักงานได้</p>`;
+        return;
+      }
+
+      if (data.length > 0) {
+        const emp = data[0];
+        document.getElementById('employee').innerHTML = `
+          <h2>รายละเอียดพนักงาน</h2>
+          <p>รหัสพนักงาน: ${emp.employee_id}</p>
+          <p>ชื่อ: ${emp.username}</p>
+          <p>ตำแหน่ง: ${emp.role}</p>
+        `;
+      } else {
+        document.getElementById('employee').innerHTML = `<p>ไม่พบข้อมูลพนักงาน</p>`;
+      }
+    }  
+
+
+    async function logout() {
+     const { error } = await supabase.auth.signOut();
+
+      if (error) {
+        console.error("เกิดข้อผิดพลาดในการออกจากระบบ:", error);
+      } else {
+        console.log("ออกจากระบบเรียบร้อยแล้ว");
+        // ลองทำการโหลดหน้าใหม่หลังจาก logout
+        location.reload();
+        window.location.href = "login.html"; // ไปที่ login.html หลังจาก reload
+      }
+    }
+    
+    window.addEventListener("DOMContentLoaded", async () => {
+      const { data: { user }, error } = await supabase.auth.getUser();
+
+      if (error || !user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      await loadEmployeeInfo();
+      await checkAdminMenu();
+    });
+
+    function updateDateTime() {
+      const now = new Date();
+      const options = {
+        weekday: 'long', year: 'numeric', month: 'long',
+        day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false
+      };
+      const datetimeStr = now.toLocaleString('th-TH', options);
+      document.getElementById('datetime').textContent = `🕒 ${datetimeStr}`;
+    }
+    // เรียกครั้งแรกทันที + ตั้งเวลาให้อัปเดตทุก 1 วินาที
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+      document.querySelectorAll('.nav-link').forEach(link => {
+        if (link.getAttribute('onclick')?.includes(id)) link.classList.add('active');
+      });
+    }
+
+
+    async function checkAdminMenu() {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const { data: emp, error } = await supabase
+        .from("employees")
+        .select("special_role")
+        .eq("email", user.email)
+        .single();
+
+        if (emp && emp.special_role === 'admin') {
+          document.getElementById("admin-menu").style.display = "block";
+        }
+    }
+
+
+    function startScan() {
+      // ตรวจสอบว่า qrScanner ถูกสร้างขึ้นแล้วหรือยัง
+      if (!qrScanner) {
+        qrScanner = new Html5Qrcode("qr-reader"); // กำหนด Element ที่จะโชว์การสแกน
+      }
+
+      qrScanner.start(
+        { facingMode: "environment" }, // ใช้กล้องหลังในการสแกน
+        {
+          fps: 10, // ความถี่ในการสแกน (frame per second)
+          qrbox: { width: 250, height: 250 } // ขนาดของกรอบสแกน
+        },
+        async (decodedText, decodedResult) => {
+          console.log("QR สแกนได้:", decodedText);
+          // ตรวจสอบ QR Code ที่ได้
+          if (decodedText === `qr-code-check-in-${new Date().toISOString().split('T')[0]}`) {
+          await saveCheckin();
+          await qrScanner.stop();
+          document.getElementById("qr-result").textContent = "✅ เช็คชื่อเข้าเรียบร้อย";
+        } else {
+          document.getElementById("qr-result").textContent = "❌ QR ไม่ถูกต้อง";
+        }
+        },
+        (errorMessage) => {
+          console.warn("สแกนไม่ได้:", errorMessage); // แสดงข้อความถ้าสแกนไม่สำเร็จ
+        }
+      ).catch(err => {
+        console.error("เกิดข้อผิดพลาดในการสแกน:", err); // แสดงข้อผิดพลาดหากมีปัญหาในการเริ่มต้นการสแกน
+      });
+      
+    }
+
+    function stopScan() {
+      if (qrScanner) {
+        qrScanner.stop().then(() => {
+          console.log("หยุดการสแกนแล้ว");
+          document.getElementById("qr-result").textContent = "❌ การสแกนถูกหยุด";
+        }).catch((err) => {
+          console.error("เกิดข้อผิดพลาดในการหยุดการสแกน:", err);
+        });
+      }
+    }
+
+
+    async function saveCheckin() {
+      const { data: userData } = await supabase.auth.getUser();
+      const email = userData.user.email;
+
+      const { data: empData, error: empErr } = await supabase
+        .from("employees")
+        .select("employee_id")
+        .eq("email", email)
+        .single(); // เอาแค่ 1 รายการ
+
+      if (empErr || !empData) {
+        document.getElementById("qr-result").innerHTML = "❌ ไม่พบรหัสพนักงาน";
+        return;
+      }
+
+      const res = await supabase.from("attendence_log").insert([
+        {
+          check_type: "check-in",
+          timestamp: new Date().toISOString(),
+          location: "office",
+          employee_id: empData.employee_id
+        }
+      ]);
+
+      if (res.error) {
+        document.getElementById("qr-result").textContent = "❌ บันทึกไม่สำเร็จ";
+      }
+    }
+
+    function startScanCheckout() {
+      // ตรวจสอบว่า qrScanner ถูกสร้างขึ้นแล้วหรือยัง
+      if (!qrScanner) {
+        qrScanner = new Html5Qrcode("qr-reader-checkout"); // กำหนด Element ที่จะโชว์การสแกน
+      }
+
+      qrScanner.start(
+        { facingMode: "environment" }, // ใช้กล้องหลังในการสแกน
+        {
+          fps: 10, // ความถี่ในการสแกน (frame per second)
+          qrbox: { width: 250, height: 250 } // ขนาดของกรอบสแกน
+        },
+        async (decodedText, decodedResult) => {
+          console.log("QR สแกนได้:", decodedText);
+          // ตรวจสอบ QR Code ที่ได้
+          if (decodedText === `qr-code-check-out-${new Date().toISOString().split('T')[0]}`) {
+            await saveCheckout();
+            await qrScanner.stop();
+            document.getElementById("qr-result").textContent = "✅ เช็คเอาท์เรียบร้อย";
+          } else {
+            document.getElementById("qr-result").textContent = "❌ QR ไม่ถูกต้อง";
+          }
+        },
+        (errorMessage) => {
+          console.warn("สแกนไม่ได้:", errorMessage); // แสดงข้อความถ้าสแกนไม่สำเร็จ
+        }
+      ).catch(err => {
+        console.error("เกิดข้อผิดพลาดในการสแกน:", err); // แสดงข้อผิดพลาดหากมีปัญหาในการเริ่มต้นการสแกน
+      });
+    }
+
+    function toggleQRCode(type) {
+      const qrDiv = document.getElementById(`${type}-qr`);
+      
+      // สลับการแสดงผลของ QR Code
+      if (qrDiv.style.display === 'none') {
+        // ถ้า QR Code ซ่อนอยู่ ให้แสดง
+        generateQRCode(type);
+        qrDiv.style.display = 'block';
+      } else {
+        // ถ้า QR Code แสดงอยู่ ให้ซ่อน
+        qrDiv.style.display = 'none';
+      }
+    }
+
+    function generateQRCode(type) {
+      const today = new Date();
+      const dateStr = today.toISOString().split('T')[0]; // รับวันที่ในรูปแบบ YYYY-MM-DD
+      
+      let codeData;
+      if (type === 'check-in') {
+        codeData = `qr-code-check-in-${dateStr}`; // สำหรับเช็คอิน
+      } else if (type === 'check-out') {
+        codeData = `qr-code-check-out-${dateStr}`; // สำหรับเช็คเอาท์
+      }
+
+      const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${codeData}`;
+      document.getElementById(`${type}-qr`).innerHTML = `
+        <h5>QR Code สำหรับการ ${type === 'check-in' ? 'เข้าทำงาน' : 'ออกงาน'}:</h5>
+        <img src="${qrCodeUrl}" />`;
+    }
+
+
+    function generateCheckInQRCode() {
+      const today = new Date();
+      const dateStr = today.toISOString().split('T')[0]; // รับวันที่ในรูปแบบ YYYY-MM-DD
+      const checkInCode = `qr-code-check-in-${dateStr}`; // ข้อความสำหรับ QR Code เช็คอิน
+
+      const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${checkInCode}`;
+      document.getElementById("check-in-qr").innerHTML = `
+      <h5>QR Code สำหรับการเข้างาน:</h5>
+      <img src="${qrCodeUrl}" />`;
+    }
+
+    function generateCheckOutQRCode() {
+      const today = new Date();
+      const dateStr = today.toISOString().split('T')[0]; // รับวันที่ในรูปแบบ YYYY-MM-DD
+      const checkOutCode = `qr-code-check-out-${dateStr}`; // ข้อความสำหรับ QR Code เช็คเอาท์
+
+      const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${checkOutCode}`;
+      document.getElementById("check-out-qr").innerHTML = `
+      <h5>QR Code สำหรับการเลิกงาน:</h5>
+      <img src="${qrCodeUrl}" />`;
+    }
+
+    async function viewAttendanceLog() {
+      const { data, error } = await supabase.from("attendence_log").select("*").order("timestamp", { ascending: false });
+
+      const logDiv = document.getElementById("attendance-log");
+      if (error) {
+        logDiv.innerHTML = `<p class="text-danger">โหลดข้อมูลไม่สำเร็จ</p>`;
+        return;
+      }
+
+      let html = "<ul class='list-group'>";
+      data.forEach(log => {
+        html += `<li class='list-group-item'>
+          🧾 ${log.employee_id} - ${log.check_type} @ ${new Date(log.timestamp).toLocaleString("th-TH")}
+        </li>`;
+      });
+      html += "</ul>";
+      logDiv.innerHTML = html;
+    }    
+  </script>
+  
+
+</head>
+<body>
+  <!-- ✅ เพิ่มใน <body> ด้านบนสุด -->
+<div class="d-flex">
+  <!-- 🔹 Sidebar -->
+  <div id="sidebar" class="bg-success text-white p-3" style="min-width: 250px; height: 100vh; position: fixed;">
+    <h4 class="mb-4">เมนู</h4>
+    <ul class="nav flex-column">
+      <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('home')">🏠 หน้าหลัก</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('checkin')">🟢 บันทึกเข้า</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('checkout')">🔴 บันทึกออก</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('calendar')">📅 ปฏิทินกิจกรรม</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('notifications')">🔔 แจ้งเตือน</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('payroll')">💸 สลิปออนไลน์</a></li>
+      <li id="admin-menu" class="nav-item" style="display:none;">
+        <a class="nav-link text-white" href="#" onclick="showSection('admin')">🛠 จัดการระบบ</a>
+      </li>
+    </ul>
+    <button class="btn btn-light mt-4" onclick="logout()">ออกจากระบบ</button>
+  </div>
+
+  <!-- 🔹 Main Content -->
+  <div style="margin-left:250px; width:100%;">
+    <!-- ที่เหลือของเนื้อหาอยู่ตรงนี้ -->
+    <div class="container py-4">
+      <div id="home" class="section active">
+        <h2>🏠 หน้าหลัก</h2>
+        <div id="employee">
+          <h2>กำลังโหลดข้อมูลพนักงาน...</h2>
+        </div>
+        <div id="datetime" class="mb-3 text-muted"></div>
+        <div class="mb-3 d-flex flex-column justify-content-center align-items-center gap-2">
+          <button class="btn btn-success w-50" onclick="showSection('checkin')">🟢 บันทึกเข้า</button>
+          <button class="btn btn-danger w-50" onclick="showSection('checkout')">🔴 บันทึกออก</button>
+        </div>        
+        <div class="mb-4">
+          <h5>🔗 หัวข้อเพิ่มเติม</h5>
+          <div class="d-grid gap-2">
+            <button class="btn btn-outline-primary" onclick="showSection('calendar')">📅 ปฏิทินกิจกรรม</button>
+            <button class="btn btn-outline-warning" onclick="showSection('notifications')">🔔 แจ้งเตือน</button>
+            <button class="btn btn-outline-info" onclick="showSection('payroll')">💸 สลิปเงินเดือน</button>
+          </div>
+        </div>
+      </div>
+      
+      <div id="checkin" class="section">
+        <h2>🟢 เช็คชื่อเข้า</h2>
+        <p>กรุณาสแกน QR Code ที่ได้รับจากแอดมินเพื่อเช็คชื่อเข้า</p>
+        <!-- ปุ่มเริ่มการสแกน -->
+        <button class="btn btn-success mt-3" onclick="startScan()">เริ่มแสกน</button>
+        <button class="btn btn-danger mt-3" onclick="stopScan()">หยุดแสกน</button>
+        <div id="qr-reader" style="width:300px;height:300px;"></div>
+        <div id="qr-result" class="mt-3 text-center text-success fw-bold"></div>
+      </div>
+
+      <div id="checkout" class="section">
+        <h2>🔴 เช็คชื่อออก</h2>
+        <p>กรุณาสแกน QR Code ที่ได้รับจากแอดมินเพื่อเช็คชื่อออก</p>
+        <!-- ปุ่มเริ่มการสแกน -->
+        <button class="btn btn-success mt-3" onclick="startScanCheckout()">เริ่มแสกน</button>
+        <button class="btn btn-danger mt-3" onclick="stopScan()">หยุดแสกน</button>
+        <div id="qr-reader-checkout" style="width:300px;height:300px;"></div>
+        <div id="qr-result" class="mt-3 text-center text-success fw-bold"></div>
+      </div>
+
+      <div id="calendar" class="section"><h2>📅 ปฏิทินกิจกรรม</h2></div>
+      <div id="notifications" class="section"><h2>🔔 แจ้งเตือน</h2></div>
+      <div id="payroll" class="section"><h2>💸 สลิปเงินเดือน</h2></div>
+      <div id="admin" class="section">
+        <h2>🛠 จัดการระบบ</h2>
+        <p>ยินดีต้อนรับผู้ดูแลระบบ</p>
+        <div class="mb-4">
+          <h4>👥 จัดการพนักงาน</h4>
+          <button class="btn btn-outline-primary">➕ เพิ่มพนักงาน</button>
+          <button class="btn btn-outline-warning">✏️ แก้ไขข้อมูล</button>
+          <button class="btn btn-outline-danger">🗑️ ลบพนักงาน</button>
+        </div>
+
+        <div class="mb-4">
+          <h4>📜 ประวัติเช็คอิน/เช็คเอาท์</h4>
+          <button class="btn btn-outline-secondary" onclick="viewAttendanceLog()">📅 ดูประวัติ</button>
+          <div id="attendance-log"></div>
+        </div>
+
+        <div class="mb-4">
+          <h4>📦 QR Code สำหรับวันนี้</h4>
+          <button class="btn btn-outline-success" onclick="toggleQRCode('check-in')">🔄 สร้าง QR สำหรับเข้าทำงาน
+          </button>
+          <button class="btn btn-outline-danger" onclick="toggleQRCode('check-out')">🔄 สร้าง QR สำหรับออกงาน</button>
+          <div id="today-qr" class="mt-4">
+            <div id="check-in-qr" style="display: none;"></div>
+            <div id="check-out-qr" style="display: none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <!-- 🔹 Section: Calendar -->
+  <!-- <div id="calendar" class="section">
+    <h2>ปฏิทินการทำงาน</h2>
+    <iframe src="https://calendar.google.com/calendar/embed?src=th.th%23holiday%40group.v.calendar.google.com&ctz=Asia%2FBangkok"
+      style="border: 0" width="100%" height="500" frameborder="0" scrolling="no"></iframe>
+  </div> -->
+    
+</body>
+</html>
