@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ระบบลงเวลาพนักงาน</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
   <link href="https://fonts.googleapis.com/css2?family=Prompt&display=swap" rel="stylesheet">
   <!-- <script src="https://unpkg.com/html5-qrcode@2.3.10/html5-qrcode.min.js" ></script> -->
   <script src="https://unpkg.com/html5-qrcode"></script>
@@ -98,19 +100,26 @@
       await checkAdminMenu();
     });
 
+    document.addEventListener('DOMContentLoaded', function() {
     function updateDateTime() {
       const now = new Date();
       const options = {
         weekday: 'long', year: 'numeric', month: 'long',
-        day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit',
+        day: 'numeric', hour: '2-digit', minute: '2-digit',
         hour12: false
       };
       const datetimeStr = now.toLocaleString('th-TH', options);
-      document.getElementById('datetime').textContent = `🕒 ${datetimeStr}`;
+      const datetimeEl = document.getElementById('datetime');
+      if (datetimeEl) {
+        datetimeEl.textContent = `🕒 ${datetimeStr}`;
+      }
     }
-    // เรียกครั้งแรกทันที + ตั้งเวลาให้อัปเดตทุก 1 วินาที
-    setInterval(updateDateTime, 1000);
-    updateDateTime();
+
+      updateDateTime();
+      setInterval(updateDateTime, 60000);
+    });
+
+
 
     function showSection(id) {
       document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
@@ -131,10 +140,15 @@
         .eq("email", user.email)
         .single();
 
-        if (emp && emp.special_role === 'admin') {
-          document.getElementById("admin-menu").style.display = "block";
-        }
+      if (emp && emp.special_role === 'admin') {
+        // แสดงเมนู admin ทั้งใน desktop และ mobile
+        ['admin-menu', 'admin-menu-mobile'].forEach(function(id) {
+          const el = document.getElementById(id);
+          if (el) el.style.display = 'block';
+        });
+      }
     }
+
 
 
     function startScan() {
@@ -318,27 +332,52 @@
 
 </head>
 <body>
-  <!-- ✅ เพิ่มใน <body> ด้านบนสุด -->
-<div class="d-flex">
-  <!-- 🔹 Sidebar -->
-  <div id="sidebar" class="bg-success text-white p-3" style="min-width: 250px; height: 100vh; position: fixed;">
-    <h4 class="mb-4">เมนู</h4>
-    <ul class="nav flex-column">
-      <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('home')">🏠 หน้าหลัก</a></li>
-      <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('checkin')">🟢 บันทึกเข้า</a></li>
-      <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('checkout')">🔴 บันทึกออก</a></li>
-      <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('calendar-page')">📅 ปฏิทินกิจกรรม</a></li>
-      <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('notifications')">🔔 แจ้งเตือน</a></li>
-      <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('payroll')">💸 สลิปออนไลน์</a></li>
-      <li id="admin-menu" class="nav-item" style="display:none;">
-        <a class="nav-link text-white" href="#" onclick="showSection('admin')">🛠 จัดการระบบ</a>
-      </li>
-    </ul>
-    <button class="btn btn-light mt-4" onclick="logout()">ออกจากระบบ</button>
+<div >
+  <div>
+    <nav class="navbar navbar-expand-lg navbar-light bg-success d-lg-none w-100">
+      <div class="container-fluid">
+        <a class="navbar-brand text-white" href="#">เมนู</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mobileNavbar" aria-controls="mobileNavbar" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mobileNavbar">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('home')">🏠 หน้าหลัก</a></li>
+            <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('checkin')">🟢 บันทึกเข้า</a></li>
+            <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('checkout')">🔴 บันทึกออก</a></li>
+            <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('calendar-page')">📅 ปฏิทินกิจกรรม</a></li>
+            <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('notifications')">🔔 แจ้งเตือน</a></li>
+            <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('payroll')">💸 สลิปออนไลน์</a></li>
+            <li id="admin-menu-mobile" class="nav-item" style="display:none;">
+              <a class="nav-link text-white" href="#" onclick="showSection('admin')">🛠 จัดการระบบ</a>
+            </li>
+          </ul>
+          <button class="btn btn-light mt-2" onclick="logout()">ออกจากระบบ</button>
+        </div>
+      </div>
+    </nav>
+  
+    <!-- 🔹 Sidebar สำหรับ Desktop (ซ่อนตอนจอเล็ก) -->
+    <div id="sidebar" class="bg-success text-white p-3 d-none d-lg-block" style="min-width: 250px; height: 100vh; position: fixed;">
+      <h4 class="mb-4">เมนู</h4>
+      <ul class="nav flex-column">
+        <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('home')">🏠 หน้าหลัก</a></li>
+        <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('checkin')">🟢 บันทึกเข้า</a></li>
+        <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('checkout')">🔴 บันทึกออก</a></li>
+        <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('calendar-page')">📅 ปฏิทินกิจกรรม</a></li>
+        <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('notifications')">🔔 แจ้งเตือน</a></li>
+        <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('payroll')">💸 สลิปออนไลน์</a></li>
+        <li id="admin-menu" class="nav-item" style="display:none;">
+          <a class="nav-link text-white" href="#" onclick="showSection('admin')">🛠 จัดการระบบ</a>
+        </li>
+      </ul>
+      <button class="btn btn-light mt-4" onclick="logout()">ออกจากระบบ</button>
+    </div>
   </div>
+  
 
   <!-- 🔹 Main Content -->
-  <div style="margin-left:250px; width:100%;">
+  <div>
     <!-- ที่เหลือของเนื้อหาอยู่ตรงนี้ -->
     <div class="container py-4">
       <div id="home" class="section active">
@@ -384,58 +423,57 @@
       <div id="calendar-page" class="section">
         <h2>📅 ปฏิทินกิจกรรม</h2>
         <div id="calendar"></div>
-      
         <script>
           document.addEventListener('DOMContentLoaded', async function () {
-    const calendarEl = document.getElementById('calendar');
+            const calendarEl = document.getElementById('calendar');
 
-    // ดึงข้อมูลจากฐานข้อมูล Supabase
-    const { data, error } = await supabase
-      .from('day_types') // ใช้ตารางที่เก็บข้อมูลประเภทวัน
-      .select('*'); // เลือกข้อมูลทั้งหมด
+            // ดึงข้อมูลจากฐานข้อมูล Supabase
+            const { data, error } = await supabase
+              .from('day_types') // ใช้ตารางที่เก็บข้อมูลประเภทวัน
+              .select('*'); // เลือกข้อมูลทั้งหมด
 
-    if (error) {
-      console.error('Error fetching data:', error);
-      return;
-    }
+            if (error) {
+              console.error('Error fetching data:', error);
+              return;
+            }
 
-    // แปลงข้อมูลให้อยู่ในรูปแบบ {date: [types]}
-    const dayTypes = {};
-    data.forEach(item => {
-      const dateStr = item.date; // ตรวจสอบว่าใช้รูปแบบที่ตรงกับ FullCalendar
-      if (!dayTypes[dateStr]) {
-        dayTypes[dateStr] = [];
-      }
-      dayTypes[dateStr].push(item.type); // เพิ่มประเภทของวัน (workday, leave, holiday)
-    });
+            // แปลงข้อมูลให้อยู่ในรูปแบบ {date: [types]}
+            const dayTypes = {};
+            data.forEach(item => {
+              const dateStr = item.date; // ตรวจสอบว่าใช้รูปแบบที่ตรงกับ FullCalendar
+              if (!dayTypes[dateStr]) {
+                dayTypes[dateStr] = [];
+              }
+              dayTypes[dateStr].push(item.type); // เพิ่มประเภทของวัน (workday, leave, holiday)
+            });
 
-    // สร้างปฏิทิน FullCalendar
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-      initialView: 'dayGridMonth',
-      locale: 'th', // ภาษาไทย
-      initialDate: new Date(), // แสดงเดือนปัจจุบัน
-      height: 'auto',
-      dayCellContent: function (arg) {
-        let dateStr = arg.date.toISOString().split('T')[0]; // แปลงวันที่เป็น string
-        let dots = '';  // เตรียมช่องว่างสำหรับ dots
+            // สร้างปฏิทิน FullCalendar
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+              initialView: 'dayGridMonth',
+              locale: 'th', // ภาษาไทย
+              initialDate: new Date(), // แสดงเดือนปัจจุบัน
+              height: 'auto',
+              dayCellContent: function (arg) {
+                let dateStr = arg.date.toISOString().split('T')[0]; // แปลงวันที่เป็น string
+                let dots = '';  // เตรียมช่องว่างสำหรับ dots
 
-        // ตรวจสอบว่าในวันที่นั้นมีการกำหนดประเภทวันหรือไม่
-        if (dayTypes[dateStr]) {
-          dots += `<div class="dots-container">`;  // สร้าง container สำหรับ dots
-          dayTypes[dateStr].forEach(type => {
-            dots += `<span class="dot ${type}"></span>`;  // เพิ่ม dot ตามประเภท
+                // ตรวจสอบว่าในวันที่นั้นมีการกำหนดประเภทวันหรือไม่
+                if (dayTypes[dateStr]) {
+                  dots += `<div class="dots-container">`;  // สร้าง container สำหรับ dots
+                  dayTypes[dateStr].forEach(type => {
+                    dots += `<span class="dot ${type}"></span>`;  // เพิ่ม dot ตามประเภท
+                  });
+                  dots += `</div>`;
+                }
+
+                // แสดงวันที่และ dots ถ้ามี
+                return { html: `<div>${arg.date.getDate()}${dots}</div>` };
+              }
+            });
+
+            // เรียกใช้งานปฏิทิน
+            calendar.render();
           });
-          dots += `</div>`;
-        }
-
-        // แสดงวันที่และ dots ถ้ามี
-        return { html: `<div>${arg.date.getDate()}${dots}</div>` };
-      }
-    });
-
-    // เรียกใช้งานปฏิทิน
-    calendar.render();
-  });
         </script>
       </div>
       

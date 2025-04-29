@@ -126,3 +126,30 @@ a {
 .fc-daygrid-body tr {
     border-top: none !important;
 }
+
+.sidebar {
+    width: 250px;
+    background-color: #2e7d32;
+    height: 100vh;
+    padding: 20px;
+  }
+  
+  .sidebar ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .sidebar ul li a {
+    display: block;
+    color: white;
+    padding: 10px;
+    text-decoration: none;
+  }
+  
+  .sidebar ul li a:hover {
+    background-color: #388e3c;
+  }
+  
+  #mobileNavbar .nav-item a {
+    margin-left: 20px;
+  }
