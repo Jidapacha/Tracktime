@@ -196,33 +196,90 @@
 
 
     async function saveCheckin() {
+    const { data: userData } = await supabase.auth.getUser();
+    const email = userData?.user?.email;
+
+    const { data: empData, error: empErr } = await supabase
+      .from("employees")
+      .select("employee_id")
+      .eq("email", email)
+      .single();
+
+    if (empErr || !empData) {
+      document.getElementById("qr-result").innerHTML = "❌ ไม่พบรหัสพนักงาน";
+      return;
+    }
+
+    // ใช้ geolocation เพื่อดึงตำแหน่ง
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+
+        const { error } = await supabase.from("attendence_log").insert([
+          {
+            check_type: "check-in",
+            timestamp: new Date().toISOString(),
+            employee_id: empData.employee_id,
+            location: "office", // หรือจะใส่ custom location string ก็ได้
+            latitude: latitude,
+            longitude: longitude
+          }
+        ]);
+
+        if (error) {
+          document.getElementById("qr-result").textContent = "❌ บันทึกไม่สำเร็จ";
+        }
+      }, () => {
+        document.getElementById("qr-result").textContent = "❌ ไม่สามารถดึงตำแหน่งได้";
+      });
+    } else {
+      document.getElementById("qr-result").textContent = "❌ เบราว์เซอร์ไม่รองรับการดึงตำแหน่ง";
+    }
+  }
+
+    async function saveCheckout() {
       const { data: userData } = await supabase.auth.getUser();
-      const email = userData.user.email;
+      const email = userData?.user?.email;
 
       const { data: empData, error: empErr } = await supabase
         .from("employees")
         .select("employee_id")
         .eq("email", email)
-        .single(); // เอาแค่ 1 รายการ
+        .single();
 
       if (empErr || !empData) {
         document.getElementById("qr-result").innerHTML = "❌ ไม่พบรหัสพนักงาน";
         return;
       }
 
-      const res = await supabase.from("attendence_log").insert([
-        {
-          check_type: "check-in",
-          timestamp: new Date().toISOString(),
-          location: "office",
-          employee_id: empData.employee_id
-        }
-      ]);
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (position) => {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
 
-      if (res.error) {
-        document.getElementById("qr-result").textContent = "❌ บันทึกไม่สำเร็จ";
+          const { error } = await supabase.from("attendence_log").insert([
+            {
+              check_type: "check-out",
+              timestamp: new Date().toISOString(),
+              employee_id: empData.employee_id,
+              location: "office",
+              latitude: latitude,
+              longitude: longitude
+            }
+          ]);
+
+          if (error) {
+            document.getElementById("qr-result").textContent = "❌ บันทึกไม่สำเร็จ";
+          }
+        }, () => {
+          document.getElementById("qr-result").textContent = "❌ ไม่สามารถดึงตำแหน่งได้";
+        });
+      } else {
+        document.getElementById("qr-result").textContent = "❌ เบราว์เซอร์ไม่รองรับการดึงตำแหน่ง";
       }
     }
+
 
     function startScanCheckout() {
       // ตรวจสอบว่า qrScanner ถูกสร้างขึ้นแล้วหรือยัง
@@ -269,22 +326,44 @@
       }
     }
 
-    function generateQRCode(type) {
-      const today = new Date();
-      const dateStr = today.toISOString().split('T')[0]; // รับวันที่ในรูปแบบ YYYY-MM-DD
-      
-      let codeData;
-      if (type === 'check-in') {
-        codeData = `qr-code-check-in-${dateStr}`; // สำหรับเช็คอิน
-      } else if (type === 'check-out') {
-        codeData = `qr-code-check-out-${dateStr}`; // สำหรับเช็คเอาท์
-      }
+    async function generateQRCode(type) {
+  const today = new Date();
+  const dateStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
+  
+  let codeData;
+  if (type === 'check-in') {
+    codeData = `qr-code-check-in-${dateStr}`;
+  } else if (type === 'check-out') {
+    codeData = `qr-code-check-out-${dateStr}`;
+  }
 
-      const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${codeData}`;
-      document.getElementById(`${type}-qr`).innerHTML = `
-        <h5>QR Code สำหรับการ ${type === 'check-in' ? 'เข้าทำงาน' : 'ออกงาน'}:</h5>
-        <img src="${qrCodeUrl}" />`;
-    }
+  // บันทึก QR ลง Supabase
+  await saveQRCodeToDatabase(codeData, type, dateStr);
+
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${codeData}`;
+  document.getElementById(`${type}-qr`).innerHTML = `
+    <h5>QR Code สำหรับการ ${type === 'check-in' ? 'เข้าทำงาน' : 'ออกงาน'}:</h5>
+    <img src="${qrCodeUrl}" />`;
+}
+
+async function saveQRCodeToDatabase(codeData, type, dateStr) {
+  const { data, error } = await supabase
+    .from("daily_qr_codes")
+    .upsert([
+      {
+        date: dateStr,
+        qr_code_text: codeData,
+        type: type,
+      }
+    ], { onConflict: ['date', 'type'] }); // ป้องกัน insert ซ้ำ
+
+  if (error) {
+    console.error("❌ บันทึก QR ลงฐานข้อมูลไม่สำเร็จ:", error.message);
+  } else {
+    console.log("✅ บันทึก QR ลงฐานข้อมูลแล้ว");
+  }
+}
+
 
 
     function generateCheckInQRCode() {
