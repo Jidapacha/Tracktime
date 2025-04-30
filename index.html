@@ -753,7 +753,8 @@ function closeNavbar() {
             <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('leave-form'); closeNavbar()">📄 เพิ่มบันทึกการลา</a></li>
             <li id="admin-menu-mobile" class="nav-item" style="display:none;">
               <p class="text-white me-auto mb-2 mb-lg-0">สำหรับผู้ดูแล</p>
-              <a class="nav-link text-white" href="#" onclick="showSection('admin'); closeNavbar()">🛠 จัดการระบบ</a>
+              <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('admin')">🛠️ จัดการระบบ</a></li>
+          <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('request')">⏳ รายการรออนุมัติ</a></li>
             </li>
           </ul>
           <button class="btn btn-light mt-2" onclick="logout()">ออกจากระบบ</button>
@@ -770,13 +771,14 @@ function closeNavbar() {
         <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('checkin')">🟢 บันทึกเข้า</a></li>
         <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('checkout')">🔴 บันทึกออก</a></li>
         <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('calendar-page')">📅 ปฏิทินกิจกรรม</a></li>
-        <p class="text-white me-auto mb-2 mb-lg-0">รายการขออนุมัติ</p>
-        <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('leave-form')">📄 เพิ่มบันทึกการลา</a></li>
         <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('notifications')">🔔 แจ้งเตือน</a></li>
         <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('payroll')">💸 สลิปออนไลน์</a></li>
+        <p class="text-white me-auto mb-2 mb-lg-0">รายการขออนุมัติ</p>
+        <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('leave-form')">📄 เพิ่มบันทึกการลา</a></li>
         <li id="admin-menu" class="nav-item" style="display:none;">
           <p class="text-white me-auto mb-2 mb-lg-0">สำหรับผู้ดูแล</p>
-          <a class="nav-link text-white" href="#" onclick="showSection('admin')">🛠 จัดการระบบ</a>
+          <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('admin')">🛠️ จัดการระบบ</a></li>
+          <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('request')">⏳ รายการรออนุมัติ</a></li>
         </li>
       </ul>
       <button class="btn btn-light mt-4" onclick="logout()">ออกจากระบบ</button>
@@ -830,7 +832,21 @@ function closeNavbar() {
       <div id="calendar-page" class="section">
         <h2>📅 ปฏิทินกิจกรรม</h2>
         <div id="calendar"></div>
+        <div id="calendar-details" class="mt-3 p-2 border rounded bg-light"></div>
+
         <script>
+          function markMondaysAsHoliday(dayTypes, startDate, endDate) {
+            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+              if (d.getDay() === 2) { // วันจันทร์ (0=อาทิตย์, 1=จันทร์,...)
+                const dateStr = d.toISOString().split('T')[0];
+                if (!dayTypes[dateStr]) dayTypes[dateStr] = [];
+                if (!dayTypes[dateStr].includes('holiday')) {
+                  dayTypes[dateStr].push('holiday');
+                }
+              }
+            }
+          }
+
           document.addEventListener('DOMContentLoaded', async function () {
             const calendarEl = document.getElementById('calendar');
       
@@ -895,6 +911,8 @@ function closeNavbar() {
               initialView: 'dayGridMonth',
               locale: 'th',
               height: 'auto',
+              showNonCurrentDates: false,
+
               dayCellContent: function (arg) {
                 const year = arg.date.getFullYear();
                 const month = (arg.date.getMonth() + 1).toString().padStart(2, '0');
@@ -912,13 +930,52 @@ function closeNavbar() {
 
                 return { html: `<div>${arg.date.getDate()}${dots}</div>` };
               },
+
               dateClick: function (info) {
                 const clickedDate = info.dateStr;
-                const types = dayTypes[clickedDate] || ['ไม่มีข้อมูล'];
-                alert(`📅 วันที่ ${clickedDate}\n\nสถานะ: ${types.join(', ')}`);
+                const types = dayTypes[clickedDate] || [];
+
+                const descriptionMap = {
+                  leave: 'วันลา',
+                  holiday: 'วันหยุด',
+                  workday: 'เข้าทำงาน',
+                  mondayHoliday: 'วันหยุดประจำบริษัท'
+                };
+
+                const readable = types.length > 0
+                  ? types.map(type => descriptionMap[type] || type).join(', ')
+                  : 'ไม่มีข้อมูล';
+
+                const detailsEl = document.getElementById('calendar-details');
+                  detailsEl.innerHTML = `
+                  <h5>📅 วันที่ ${clickedDate}</h5>
+                  <p><strong>สถานะ:</strong> ${readable}</p>
+                `;
+                },
+
+              // ✅ จุดนี้คือสิ่งที่คุณลืมใส่ไว้ใน Calendar config
+                datesSet: function(info) {
+                const calendar = info.view.calendar;
+
+                // ลบ 'holiday' ที่เป็นวันจันทร์ (ถ้าไม่มีใน holidayRes)
+                Object.keys(dayTypes).forEach(date => {
+                  const types = dayTypes[date];
+                  const d = new Date(date);
+                  if (d.getDay() === 1) { // วันจันทร์
+                    const index = types.indexOf('holiday');
+                    if (index !== -1) {
+                      types.splice(index, 1);
+                      if (types.length === 0) delete dayTypes[date];
+                    }
+                  }
+                });
+
+                // เพิ่มวันจันทร์ใหม่
+                markMondaysAsHoliday(dayTypes, info.start, new Date(info.end.getTime() - 1));
+                calendar.render();
               }
             });
-      
+
             calendar.render();
           });
       
@@ -979,19 +1036,99 @@ function closeNavbar() {
           <button onclick="cancelPreview()">แก้ไข</button>
       </div>
       
-      
-
+    
       <div id="notifications" class="section"><h2>🔔 แจ้งเตือน</h2></div>
       <div id="payroll" class="section"><h2>💸 สลิปเงินเดือน</h2></div>
+
       <div id="admin" class="section">
-        <h2>🛠 จัดการระบบ</h2>
+        <h2>🛠️ จัดการระบบ</h2>
         <p>ยินดีต้อนรับผู้ดูแลระบบ</p>
         <div class="mb-4">
           <h4>👥 จัดการพนักงาน</h4>
-          <button class="btn btn-outline-primary">➕ เพิ่มพนักงาน</button>
+          <button class="btn btn-outline-primary mb-2" onclick="toggleAddForm()">➕ เพิ่มพนักงาน</button>
           <button class="btn btn-outline-warning">✏️ แก้ไขข้อมูล</button>
           <button class="btn btn-outline-danger">🗑️ ลบพนักงาน</button>
+          
+          <form id="add-employee-form" class="row g-2 mb-3" style="display: none;">
+            <div class="col-md-4">
+              <input type="text" class="form-control" id="name" placeholder="ชื่อจริง" required>
+            </div>
+            <div class="col-md-4">
+              <input type="email" class="form-control" id="username" placeholder="ชื่อเล่น" required>
+            </div>
+       
+            <div class="col-md-4">
+              <input type="email" class="form-control" id="email" placeholder="อีเมล" required>
+            </div>
+            <div class="col-md-4">
+              <input type="email" class="form-control" id="tel" placeholder="เบอร์โทร" required>
+            </div>
+            <div class="col-md-4">
+              <select id="role" class="form-select" required>
+                <option value="" disabled selected>เลือกตำแหน่ง</option>
+                <option value="Full-time">Full-time</option>
+                <option value="Part-time">Part-time</option>
+                <option value="Internship">Internship</option>
+              </select>
+            </div>
+            
+            <div class="col-md-4">
+              <select id="bank" class="form-select" required>
+                <option value="" disabled selected>เลือกธนาคาร</option>
+                <option value="กรุงเทพ">กรุงเทพ</option>
+                <option value="ไทยพาณิชย์">ไทยพาณิชย์</option>
+                <option value="กสิกรไทย">กสิกรไทย</option>
+                <option value="กรุงไทย">กรุงไทย</option>
+                <option value="กรุงศรี">กรุงศรี</option>
+                <option value="ออมสิน">ออมสิน</option>
+                <option value="พร้อมเพย์">พร้อมเพย์</option>
+                <option value="อื่นๆ">อื่นๆ</option>
+              </select>
+            </div>
+
+            <div class="col-md-4" id="other-bank-container" style="display: none;">
+              <input type="text" class="form-control" id="other-bank" placeholder="กรุณากรอกชื่อธนาคาร">
+            </div>
+
+            <div class="col-md-4">
+              <input type="email" class="form-control" id="bank_number" placeholder="เลขบัญชี" required>
+            </div>
+         
+            <div class="col-md-4">
+              <button type="submit" class="btn btn-success">✅ บันทึก</button>
+            </div>
+          </form>
+
+          <ul id="employee-list" class="list-group"></ul>
+
+
+
+
         </div>
+
+        <script>
+          // ✅ ซ่อน/แสดงฟอร์มเพิ่มพนักงาน
+          function toggleAddForm() {
+            const form = document.getElementById('add-employee-form');
+            form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+          }
+          
+          function toggleOtherBank(selectElement) {
+            const otherBankContainer = document.getElementById('other-bank-container');
+            const otherBankInput = document.getElementById('other-bank');
+            
+            if (selectElement.value === 'อื่นๆ') {
+              otherBankContainer.style.display = 'block';
+              otherBankInput.required = true;
+            } else {
+              otherBankContainer.style.display = 'none';
+              otherBankInput.required = false;
+            }
+          }
+
+          
+        </script>
+        
 
         <div class="mb-4">
           <h4>📜 ประวัติเช็คอิน/เช็คเอาท์</h4>
@@ -1010,17 +1147,13 @@ function closeNavbar() {
           </div>
         </div>
       </div>
+
+      <div id="request" class="section">
+        <h2>⏳ รายการรออนุมัติ</h2>
+      </div>
+
     </div>
   </div>
-</div>
-
-
-  <!-- 🔹 Section: Calendar -->
-  <!-- <div id="calendar" class="section">
-    <h2>ปฏิทินการทำงาน</h2>
-    <iframe src="https://calendar.google.com/calendar/embed?src=th.th%23holiday%40group.v.calendar.google.com&ctz=Asia%2FBangkok"
-      style="border: 0" width="100%" height="500" frameborder="0" scrolling="no"></iframe>
-  </div> -->
-    
+</div>    
 </body>
 </html>

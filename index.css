@@ -1,172 +1,122 @@
-/* ปรับฟอนต์ปฏิทินให้ใช้ Prompt */
+/* ฟอนต์หลัก */
 .fc {
-    font-family: 'Prompt', sans-serif;
+  font-family: 'Prompt', sans-serif;
 }
 
-/* ปรับกรอบปฏิทินให้มีสีพื้นหลังและขอบมน */
+/* พื้นหลังปฏิทิน */
 #calendar {
-    background-color: #e0f2f7; /* สีฟ้าอ่อน */
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin-top: 1rem;
+  background-color: white;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  margin-top: 1rem;
 }
 
-/* ปรับส่วนหัวของปฏิทิน (เดือน, ปุ่มเปลี่ยนเดือน) */
+/* Toolbar */
 .fc-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 1rem;
 }
 
 .fc-toolbar-title {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #2c3e50; /* สีเทาเข้ม */
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #00796b;
 }
 
 .fc-button {
-    background-color: #00bcd4 !important; /* สีฟ้า */
-    border: none !important;
-    color: white !important;
-    border-radius: 5px !important;
-    padding: 8px 12px !important;
-    font-size: 0.9rem !important;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin: 2px !important;
+  background-color: transparent !important;
+  border: none !important;
+  color: #00796b !important;
+  font-size: 1.2rem !important;
+  padding: 4px !important;
 }
 
-.fc-prev-button span, .fc-next-button span {
-    font-size: 1.2rem;
+.fc-button:disabled {
+  opacity: 0.5;
 }
 
-/* ปรับตารางวัน */
+.fc-prev-button span,
+.fc-next-button span {
+  font-size: 1.5rem;
+}
+
+/* ส่วนหัววันในสัปดาห์ */
 .fc-day-header {
-    background-color: #b2ebf2; /* สีฟ้าอ่อนกว่า */
-    color: #2c3e50;
-    font-weight: bold;
-    padding: 8px 0;
-    text-align: center;    
+  background-color: transparent;
+  color: #2c3e50;
+  font-weight: 500;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 5px 0;
 }
 
-a {
-    text-decoration: none !important;
-    color: #333;
-}
-/* .fc-daygrid-day {
-    border: none !important; 
-    min-height: 80px; 
-} */
-
+/* ตัวเลขวันที่ */
 .fc-daygrid-day-number {
-    color: #333;
-    padding: 5px;
-    font-size: 0.9rem;
-    border: none !important; /* ลบเส้นขอบ */
-    text-decoration: none !important; /* ลบเส้นใต้ */
+  color: #333;
+  font-size: 1rem;
+  text-align: center;
+  line-height: 32px; /* ทำให้ตัวเลขอยู่กลางช่อง */
+  height: 32px; /* ความสูงของแต่ละช่อง */
+  width: 32px; /* ความกว้างของแต่ละช่อง */
+  border-radius: 50%; /* ทำให้ตัวเลขมีลักษณะกลม */
+  display: inline-block;
+  margin: 0 auto;
 }
 
-.fc-daygrid-day a {
-    text-decoration: none !important; /* ลบเส้นใต้จากแท็ก a ที่อาจอยู่ภายใน */
+.fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+  background-color: #00796b;
+  color: white;
 }
 
-.fc-daygrid-day:hover {
-    background-color: #f0f8ff;
-    cursor: pointer;
+/* ซ่อนวันนอกเดือนนี้ */
+.fc-daygrid-day.fc-day-other {
+  visibility: hidden;
 }
 
-/* ปรับสัญลักษณ์จุด */
+/* เอาเส้นขอบและกริดออก */
+.fc-daygrid-day-frame {
+  padding: 0 !important;
+  border: none !important;
+  background-color: transparent !important; /* ทำให้พื้นหลังโปร่งใส */
+}
+
+.fc-scrollgrid,
+.fc-scrollgrid-section,
+.fc-scrollgrid-sync-table {
+  border: none !important;
+}
+
+/* ลบช่องว่างใต้กิจกรรม */
+.fc .fc-daygrid-body-natural .fc-daygrid-day-events {
+  margin-bottom: 0px;
+}
+
+/* จุดแสดงกิจกรรมใต้วันที่ */
 .dots-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 5px;
+  display: flex;
+  justify-content: center;
+  margin-top: 2px;
 }
 
 .dot {
-    height: 8px;
-    width: 8px;
-    border-radius: 50%;
-    display: inline-block;
-    margin: 0 2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin: 0 1px;
 }
 
-.workday {
-    background-color: #4caf50; /* สีเขียว */
+.dot.leave { background-color: #ff9800; }
+.dot.holiday { background-color: #f44336; }
+.dot.workday { background-color: #4caf50; }
+
+/* ลิงก์ไม่ต้องมีขีดเส้นใต้ */
+a {
+  text-decoration: none !important;
+  color: #333;
 }
-
-.leave {
-    background-color: #ff9800; /* สีส้ม */
-}
-
-.holiday {
-    background-color: #f44336; /* สีแดง */
-}
-
-/* ปรับ event ในปฏิทิน */
-.fc-daygrid-event {
-    background-color: #4db6ac !important; /* สีเขียวอมฟ้า */
-    color: white !important;
-    border: none;
-    border-radius: 5px;
-    padding: 5px;
-    margin-bottom: 3px;
-    font-size: 0.85rem;
-    white-space: normal; /* แสดงข้อความ event ทั้งหมด */
-    overflow: hidden;
-}
-
-.fc-daygrid-event:hover {
-    opacity: 0.8;
-    cursor: pointer;
-}
-
-/* ลบเส้นที่แบ่งระหว่างแถวของสัปดาห์ */
-.fc-daygrid-body tr {
-    border-top: none !important;
-}
-
-.sidebar {
-    width: 250px;
-    background-color: #2e7d32;
-    height: 100vh;
-    padding: 20px;
-  }
-  
-  .sidebar ul {
-    list-style: none;
-    padding: 0;
-  }
-  
-  .sidebar ul li a {
-    display: block;
-    color: white;
-    padding: 10px;
-    text-decoration: none;
-  }
-  
-  .sidebar ul li a:hover {
-    background-color: #388e3c;
-  }
-  
-  #mobileNavbar .nav-item a {
-    margin-left: 20px;
-  }
-
-  .dots-container {
-    margin-top: 2px;
-  }
-  .dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-right: 2px;
-  }
-  .dot.leave { background-color: orange; }
-  .dot.holiday { background-color: red; }
-  .dot.workday { background-color: green; }
 
   #leave-form {
     max-width: 400px;
@@ -235,55 +185,6 @@ a {
     margin-top: 6px;
   }
   
-
-  /* #leave-summary {
-    border: 2px solid #ccc;
-    border-radius: 12px;
-    padding: 20px;
-    margin-top: 20px;
-    background-color: #f9f9f9;
-    max-width: 500px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  }
-
-  #leave-summary h3 {
-    margin-top: 0;
-    color: #333;
-  }
-
-  #summary-content {
-    font-size: 18px;
-    color: #555;
-    line-height: 1.6;
-  }
-
-  #leave-summary button {
-    margin-right: 10px;
-    padding: 8px 16px;
-    font-size: 16px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.2s ease;
-  }
-
-  #leave-summary button:first-of-type {
-    background-color: #4caf50;
-    color: white;
-  }
-
-  #leave-summary button:first-of-type:hover {
-    background-color: #45a049;
-  }
-
-  #leave-summary button:last-of-type {
-    background-color: #f44336;
-    color: white;
-  }
-
-  #leave-summary button:last-of-type:hover {
-    background-color: #e53935;
-  } */
 
   #leave-summary {
     display: none;
