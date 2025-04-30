@@ -752,6 +752,7 @@ function closeNavbar() {
             <p class="text-white me-auto mb-2 mb-lg-0">รายการขออนุมัติ</p>
             <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('leave-form'); closeNavbar()">📄 เพิ่มบันทึกการลา</a></li>
             <li id="admin-menu-mobile" class="nav-item" style="display:none;">
+              <p class="text-white me-auto mb-2 mb-lg-0">สำหรับผู้ดูแล</p>
               <a class="nav-link text-white" href="#" onclick="showSection('admin'); closeNavbar()">🛠 จัดการระบบ</a>
             </li>
           </ul>
@@ -762,17 +763,19 @@ function closeNavbar() {
     
   
     <!-- 🔹 Sidebar สำหรับ Desktop (ซ่อนตอนจอเล็ก) -->
-    <div id="sidebar" class="bg-success text-white p-3 d-none d-lg-block" style="min-width: 250px; height: 100vh; position: fixed;">
+    <div id="sidebar" class="bg-success text-white p-3 d-none d-lg-block" style="min-width: 250px; height: 100vh; position: fixed; top: 0; left: 0;">
       <h4 class="mb-4">เมนู</h4>
       <ul class="nav flex-column">
         <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('home')">🏠 หน้าหลัก</a></li>
         <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('checkin')">🟢 บันทึกเข้า</a></li>
         <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('checkout')">🔴 บันทึกออก</a></li>
         <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('calendar-page')">📅 ปฏิทินกิจกรรม</a></li>
+        <p class="text-white me-auto mb-2 mb-lg-0">รายการขออนุมัติ</p>
         <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('leave-form')">📄 เพิ่มบันทึกการลา</a></li>
         <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('notifications')">🔔 แจ้งเตือน</a></li>
         <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('payroll')">💸 สลิปออนไลน์</a></li>
         <li id="admin-menu" class="nav-item" style="display:none;">
+          <p class="text-white me-auto mb-2 mb-lg-0">สำหรับผู้ดูแล</p>
           <a class="nav-link text-white" href="#" onclick="showSection('admin')">🛠 จัดการระบบ</a>
         </li>
       </ul>
@@ -782,9 +785,8 @@ function closeNavbar() {
   
 
   <!-- 🔹 Main Content -->
-  <div>
-    <!-- ที่เหลือของเนื้อหาอยู่ตรงนี้ -->
-    <div class="container py-4">
+  <div class="main-content">
+    <div class="container py-4" id="main-content">
       <div id="home" class="section active">
         <h2>🏠 หน้าหลัก</h2>
         <div id="employee">
@@ -847,8 +849,7 @@ function closeNavbar() {
             console.log('Leave Days:', leaveRes.data, leaveRes.error);
             console.log('Holidays:', holidayRes.data, holidayRes.error);
             console.log('Attendance:', attendanceRes.data, attendanceRes.error);
-
-
+        
             const dayTypes = {};
       
             // วันลา
@@ -871,11 +872,13 @@ function closeNavbar() {
       
             // วันหยุด
             holidayRes.data.forEach(item => {
-              const date = item.date;
+              const date = item.date; // '2025-04-30'
               if (!dayTypes[date]) dayTypes[date] = [];
               dayTypes[date].push('holiday');
+              console.log(typeof item.date, item.date);
+
             });
-      
+
             // วันทำงานจาก check-in เท่านั้น
             attendanceRes.data.forEach(item => {
               if (item.check_type === 'in') {
@@ -886,16 +889,19 @@ function closeNavbar() {
                 }
               }
             });
-      
+
             // แสดงปฏิทิน
             const calendar = new FullCalendar.Calendar(calendarEl, {
               initialView: 'dayGridMonth',
               locale: 'th',
               height: 'auto',
               dayCellContent: function (arg) {
-                const dateStr = arg.date.toISOString().split('T')[0];
+                const year = arg.date.getFullYear();
+                const month = (arg.date.getMonth() + 1).toString().padStart(2, '0');
+                const day = arg.date.getDate().toString().padStart(2, '0');
+                const dateStr = `${year}-${month}-${day}`;
+                
                 let dots = '';
-      
                 if (dayTypes[dateStr]) {
                   dots += `<div class="dots-container">`;
                   dayTypes[dateStr].forEach(type => {
@@ -903,7 +909,7 @@ function closeNavbar() {
                   });
                   dots += `</div>`;
                 }
-      
+
                 return { html: `<div>${arg.date.getDate()}${dots}</div>` };
               },
               dateClick: function (info) {
@@ -915,7 +921,9 @@ function closeNavbar() {
       
             calendar.render();
           });
+      
         </script>
+        
       </div>
 
       <div id="leave-form" class="section">

@@ -329,3 +329,10 @@ a {
   #leave-summary button:hover {
     opacity: 0.9;
   }
+
+
+  @media (min-width: 992px) {
+    .main-content {
+      margin-left: 250px; /* เผื่อพื้นที่ sidebar */
+    }
+  }
