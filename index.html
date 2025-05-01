@@ -28,7 +28,8 @@
 
   
   <script>
-    let qrScanner;
+
+
     // สร้าง client
     const supabase = window.supabase.createClient(
       "https://ukdachhtnvhoxaospqls.supabase.co",
@@ -65,8 +66,8 @@
         const emp = data[0];
         document.getElementById('employee').innerHTML = `
           <h2>รายละเอียดพนักงาน</h2>
-          <p>รหัสพนักงาน: ${emp.employee_id}</p>
-          <p>ชื่อ: ${emp.username}</p>
+          <p>ชื่อ: ${emp.name}</p>
+          <p>ชื่อเล่น: ${emp.username}</p>
           <p>ตำแหน่ง: ${emp.role}</p>
         `;
       } else {
@@ -132,185 +133,350 @@
 
 
     async function checkAdminMenu() {
-      const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: emp, error } = await supabase
+    .from("employees")
+    .select("special_role")
+    .eq("email", user.email)
+    .single();
 
-      const { data: emp, error } = await supabase
-        .from("employees")
-        .select("special_role")
-        .eq("email", user.email)
-        .single();
+  const isAdmin = emp && emp.special_role && emp.special_role.trim().toLowerCase() === 'admin';
 
-      if (emp && emp.special_role === 'admin') {
-        // แสดงเมนู admin ทั้งใน desktop และ mobile
-        ['admin-menu', 'admin-menu-mobile'].forEach(function(id) {
-          const el = document.getElementById(id);
-          if (el) el.style.display = 'block';
-        });
-      }
-    }
+  // ซ่อนไว้ก่อนเสมอ
+  ['admin-menu', 'admin-menu-mobile'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('d-none');
+  });
 
-
-
-    function startScan() {
-      // ตรวจสอบว่า qrScanner ถูกสร้างขึ้นแล้วหรือยัง
-      if (!qrScanner) {
-        qrScanner = new Html5Qrcode("qr-reader"); // กำหนด Element ที่จะโชว์การสแกน
-      }
-
-      qrScanner.start(
-        { facingMode: "environment" }, // ใช้กล้องหลังในการสแกน
-        {
-          fps: 10, // ความถี่ในการสแกน (frame per second)
-          qrbox: { width: 250, height: 250 } // ขนาดของกรอบสแกน
-        },
-        async (decodedText, decodedResult) => {
-          console.log("QR สแกนได้:", decodedText);
-          // ตรวจสอบ QR Code ที่ได้
-          if (decodedText === `qr-code-check-in-${new Date().toISOString().split('T')[0]}`) {
-          await saveCheckin();
-          await qrScanner.stop();
-          document.getElementById("qr-result").textContent = "✅ เช็คชื่อเข้าเรียบร้อย";
-        } else {
-          document.getElementById("qr-result").textContent = "❌ QR ไม่ถูกต้อง";
-        }
-        },
-        (errorMessage) => {
-          console.warn("สแกนไม่ได้:", errorMessage); // แสดงข้อความถ้าสแกนไม่สำเร็จ
-        }
-      ).catch(err => {
-        console.error("เกิดข้อผิดพลาดในการสแกน:", err); // แสดงข้อผิดพลาดหากมีปัญหาในการเริ่มต้นการสแกน
-      });
-      
-    }
-
-    function stopScan() {
-      if (qrScanner) {
-        qrScanner.stop().then(() => {
-          console.log("หยุดการสแกนแล้ว");
-          document.getElementById("qr-result").textContent = "❌ การสแกนถูกหยุด";
-        }).catch((err) => {
-          console.error("เกิดข้อผิดพลาดในการหยุดการสแกน:", err);
-        });
-      }
-    }
-
-
-    async function saveCheckin() {
-    const { data: userData } = await supabase.auth.getUser();
-    const email = userData?.user?.email;
-
-    const { data: empData, error: empErr } = await supabase
-      .from("employees")
-      .select("employee_id")
-      .eq("email", email)
-      .single();
-
-    if (empErr || !empData) {
-      document.getElementById("qr-result").innerHTML = "❌ ไม่พบรหัสพนักงาน";
-      return;
-    }
-
-    // ใช้ geolocation เพื่อดึงตำแหน่ง
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-
-        const { error } = await supabase.from("attendence_log").insert([
-          {
-            check_type: "check-in",
-            timestamp: new Date().toISOString(),
-            employee_id: empData.employee_id,
-            location: "office", // หรือจะใส่ custom location string ก็ได้
-            latitude: latitude,
-            longitude: longitude
-          }
-        ]);
-
-        if (error) {
-          document.getElementById("qr-result").textContent = "❌ บันทึกไม่สำเร็จ";
-        }
-      }, () => {
-        document.getElementById("qr-result").textContent = "❌ ไม่สามารถดึงตำแหน่งได้";
-      });
-    } else {
-      document.getElementById("qr-result").textContent = "❌ เบราว์เซอร์ไม่รองรับการดึงตำแหน่ง";
-    }
+  if (isAdmin) {
+    ['admin-menu', 'admin-menu-mobile'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('d-none');
+    });
   }
 
-    async function saveCheckout() {
-      const { data: userData } = await supabase.auth.getUser();
-      const email = userData?.user?.email;
+  console.log('Is Admin?', isAdmin);
+}
 
-      const { data: empData, error: empErr } = await supabase
-        .from("employees")
-        .select("employee_id")
-        .eq("email", email)
-        .single();
 
-      if (empErr || !empData) {
-        document.getElementById("qr-result").innerHTML = "❌ ไม่พบรหัสพนักงาน";
-        return;
-      }
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAdminMenu();
+    });
 
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async (position) => {
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
 
-          const { error } = await supabase.from("attendence_log").insert([
-            {
-              check_type: "check-out",
-              timestamp: new Date().toISOString(),
-              employee_id: empData.employee_id,
-              location: "office",
-              latitude: latitude,
-              longitude: longitude
-            }
-          ]);
 
-          if (error) {
-            document.getElementById("qr-result").textContent = "❌ บันทึกไม่สำเร็จ";
-          }
-        }, () => {
-          document.getElementById("qr-result").textContent = "❌ ไม่สามารถดึงตำแหน่งได้";
-        });
+    let qrScanner;
+let hasScanned = false;
+
+function getLocalTimestamp() {
+  const date = new Date();
+  const options = { 
+    timeZone: 'Asia/Bangkok',  // ใช้โซนเวลาของประเทศไทย
+    hour12: false,  // กำหนดให้ใช้เวลาแบบ 24 ชั่วโมง
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    fractionalSecondDigits: 3,  // ถ้าต้องการมิลลิวินาที
+  };
+
+  const localTime = new Intl.DateTimeFormat('en-GB', options).format(date);
+  return localTime.replace(",", "");  // ลบเครื่องหมายจุลภาคที่เกิดจากการแปลง
+}
+
+// ใช้ฟังก์ชัน getLocalTimestamp เพื่อบันทึกเวลาท้องถิ่น
+const localTimestamp = getLocalTimestamp();
+console.log(localTimestamp);  // ตัวอย่างเช่น "2025-05-01 17:54:23.865"
+
+function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // รัศมีของโลกในเมตร
+  const φ1 = lat1 * Math.PI / 180;
+  const φ2 = lat2 * Math.PI / 180;
+  const Δφ = (lat2 - lat1) * Math.PI / 180;
+  const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  const d = R * c;
+  return d;
+}
+
+
+function startScan() {
+  if (!qrScanner) {
+    qrScanner = new Html5Qrcode("qr-reader");
+  }
+
+  hasScanned = false; 
+
+  qrScanner.start(
+    { facingMode: "environment" },
+    {
+      fps: 10,
+      qrbox: { width: 250, height: 250 }
+    },
+    async (decodedText, decodedResult) => {
+      if (hasScanned) return; // ถ้าเคยสแกนแล้ว ไม่ต้องทำซ้ำ
+
+      console.log("QR สแกนได้:", decodedText);
+
+      const todayCode = `qr-code-check-in-${new Date().toISOString().split('T')[0]}`;
+
+      if (decodedText === todayCode) {
+        hasScanned = true; // ป้องกันสแกนซ้ำ
+        await qrScanner.stop(); // หยุดการสแกนทันที
+        document.getElementById("qr-result").textContent = "✅ เช็คชื่อเข้าเรียบร้อย";
+        await saveCheckin();
       } else {
-        document.getElementById("qr-result").textContent = "❌ เบราว์เซอร์ไม่รองรับการดึงตำแหน่ง";
+        document.getElementById("qr-result").textContent = "❌ QR ไม่ถูกต้อง";
       }
+    },
+    (errorMessage) => {
+      console.warn("สแกนไม่ได้:", errorMessage);
     }
+  ).catch(err => {
+    console.error("เกิดข้อผิดพลาดในการสแกน:", err);
+  });
+}
 
+function stopScan() {
+  if (qrScanner) {
+    qrScanner.stop().then(() => {
+      console.log("หยุดการสแกนแล้ว");
+      document.getElementById("qr-result").textContent = "❌ การสแกนถูกหยุด";
+    }).catch((err) => {
+      console.error("เกิดข้อผิดพลาดในการหยุดการสแกน:", err);
+    });
+  }
+}
 
-    function startScanCheckout() {
-      // ตรวจสอบว่า qrScanner ถูกสร้างขึ้นแล้วหรือยัง
-      if (!qrScanner) {
-        qrScanner = new Html5Qrcode("qr-reader-checkout"); // กำหนด Element ที่จะโชว์การสแกน
-      }
+async function saveCheckin() {
+  const { data: userData } = await supabase.auth.getUser();
+  const email = userData?.user?.email;
 
-      qrScanner.start(
-        { facingMode: "environment" }, // ใช้กล้องหลังในการสแกน
+  const { data: empData, error: empErr } = await supabase
+    .from("employees")
+    .select("employee_id")
+    .eq("email", email)
+    .single();
+
+  if (empErr || !empData) {
+    document.getElementById("qr-result").innerHTML = "❌ ไม่พบรหัสพนักงาน";
+    return;
+  }
+
+  const employeeId = empData.employee_id;
+
+  // ตรวจสอบว่าเคยเช็คอินวันนี้หรือยัง
+  const today = new Date();
+  const startOfDay = new Date(today);
+  startOfDay.setHours(0, 0, 0, 0);
+  const endOfDay = new Date(today);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  const { data: checkLog, error: checkErr } = await supabase
+    .from("attendance_log")
+    .select("*")
+    .eq("employee_id", employeeId)
+    .eq("check_type", "check-in")
+    .gte("timestamp", startOfDay.toISOString())
+    .lte("timestamp", endOfDay.toISOString());
+
+    console.log("Email:", email);
+    console.log("Employee Data:", empData);
+    console.log("Employee Error:", empErr);
+    console.log("Check Log:", checkLog);
+    console.log("Check Error:", checkErr);
+
+  if (checkLog && checkLog.length > 0) {
+    document.getElementById("qr-result").textContent = "✅ เช็คอินไปแล้ววันนี้";
+    return;
+  }
+
+  // ถ้ายังไม่เช็คอิน → ขอพิกัด
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+
+      const officeLat = 13.791099492729726;
+      const officeLon = 100.49673497164436;
+      const distance = getDistanceFromLatLonInMeters(latitude, longitude, officeLat, officeLon);
+      const locationLabel = distance <= 500
+        ? "office"
+        : `${latitude.toFixed(6)},${longitude.toFixed(6)}`;
+
+      const { error } = await supabase.from("attendance_log").insert([
         {
-          fps: 10, // ความถี่ในการสแกน (frame per second)
-          qrbox: { width: 250, height: 250 } // ขนาดของกรอบสแกน
-        },
-        async (decodedText, decodedResult) => {
-          console.log("QR สแกนได้:", decodedText);
-          // ตรวจสอบ QR Code ที่ได้
-          if (decodedText === `qr-code-check-out-${new Date().toISOString().split('T')[0]}`) {
-            await saveCheckout();
-            await qrScanner.stop();
-            document.getElementById("qr-result").textContent = "✅ เช็คเอาท์เรียบร้อย";
-          } else {
-            document.getElementById("qr-result").textContent = "❌ QR ไม่ถูกต้อง";
-          }
-        },
-        (errorMessage) => {
-          console.warn("สแกนไม่ได้:", errorMessage); // แสดงข้อความถ้าสแกนไม่สำเร็จ
+          check_type: "check-in",
+          timestamp: getLocalTimestamp(),
+          employee_id: employeeId,
+          location: locationLabel,
+          latitude: latitude.toString(),
+          longitude: longitude.toString()
         }
-      ).catch(err => {
-        console.error("เกิดข้อผิดพลาดในการสแกน:", err); // แสดงข้อผิดพลาดหากมีปัญหาในการเริ่มต้นการสแกน
+      ]);
+
+      console.log("Insert Data:", {
+        check_type: "check-in",
+        timestamp: getLocalTimestamp(),
+        employee_id: employeeId,
+        location: locationLabel,
+        latitude: latitude.toString(),
+        longitude: longitude.toString()
       });
+      console.log("Insert Error:", error);
+
+
+      if (error) {
+        document.getElementById("qr-result").textContent = "❌ บันทึกไม่สำเร็จ";
+      } else {
+        document.getElementById("qr-result").textContent = "✅ เช็คอินสำเร็จ!";
+      }
+    }, () => {
+      document.getElementById("qr-result").textContent = "❌ ไม่สามารถดึงตำแหน่งได้";
+    });
+  } else {
+    document.getElementById("qr-result").textContent = "❌ เบราว์เซอร์ไม่รองรับการดึงตำแหน่ง";
+  }
+}
+
+async function saveCheckout() {
+  const { data: userData } = await supabase.auth.getUser();
+  const email = userData?.user?.email;
+
+  const { data: empData, error: empErr } = await supabase
+    .from("employees")
+    .select("employee_id")
+    .eq("email", email)
+    .single();
+
+
+  if (empErr || !empData) {
+    document.getElementById("qr-result-checkout").innerHTML = "❌ ไม่พบรหัสพนักงาน";
+    return;
+  }
+
+  const employeeId = empData.employee_id;
+
+  const today = new Date();
+  const startOfDay = new Date(today);
+  startOfDay.setHours(0, 0, 0, 0);
+  const endOfDay = new Date(today);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  const { data: checkLog, error: checkErr } = await supabase
+    .from("attendance_log")
+    .select("*")
+    .eq("employee_id", employeeId)
+    .eq("check_type", "check-out")
+    .gte("timestamp", startOfDay.toISOString())
+    .lte("timestamp", endOfDay.toISOString());
+
+    console.log("Email:", email);
+    console.log("Employee Data:", empData);
+    console.log("Employee Error:", empErr);
+    console.log("Check Log:", checkLog);
+    console.log("Check Error:", checkErr);
+
+
+  if (checkLog && checkLog.length > 0) {
+    document.getElementById("qr-result-checkout").textContent = "✅ เช็คเอาท์ไปแล้ววันนี้";
+    return;
+  }
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+
+      const officeLat = 13.791099492729726;
+      const officeLon = 100.49673497164436;
+      const distance = getDistanceFromLatLonInMeters(latitude, longitude, officeLat, officeLon);
+      const locationLabel = distance <= 500
+        ? "office"
+        : `${latitude.toFixed(6)},${longitude.toFixed(6)}`;
+
+      const { error } = await supabase.from("attendance_log").insert([
+        {
+          check_type: "check-out",
+          timestamp: getLocalTimestamp(),
+          employee_id: employeeId,
+          location: locationLabel,
+          latitude: latitude.toString(),
+          longitude: longitude.toString()
+        }
+      ]);
+
+      console.log("Insert Data:", {
+        check_type: "check-out",
+        timestamp: getLocalTimestamp(),
+        employee_id: employeeId,
+        location: locationLabel,
+        latitude: latitude.toString(),
+        longitude: longitude.toString()
+      });
+      console.log("Insert Error:", error);
+
+      
+      
+      if (error) {
+        document.getElementById("qr-result-checkout").textContent = "❌ บันทึกไม่สำเร็จ";
+      } else {
+        document.getElementById("qr-result-checkout").textContent = "✅ เช็คเอาท์สำเร็จ!";
+      }
+    }, () => {
+      document.getElementById("qr-result-checkout").textContent = "❌ ไม่สามารถดึงตำแหน่งได้";
+    });
+  } else {
+    document.getElementById("qr-result-checkout").textContent = "❌ เบราว์เซอร์ไม่รองรับการดึงตำแหน่ง";
+  }
+}
+
+function startScanCheckout() {
+  if (!qrScanner) {
+    qrScanner = new Html5Qrcode("qr-reader-checkout");
+  }
+
+  hasScanned = false;
+
+  qrScanner.start(
+    { facingMode: "environment" },
+    {
+      fps: 10,
+      qrbox: { width: 250, height: 250 }
+    },
+    async (decodedText, decodedResult) => {
+      if (hasScanned) return;
+      console.log("QR สแกนได้:", decodedText);
+      const todayCode = `qr-code-check-out-${new Date().toISOString().split('T')[0]}`;
+
+      if (decodedText === todayCode) {
+        hasScanned = true; // ป้องกันสแกนซ้ำ
+        await qrScanner.stop(); // หยุดการสแกนทันที
+        document.getElementById("qr-result-checkout").textContent = "✅ เช็คชื่อออกเรียบร้อย";
+        await saveCheckout();
+      } else {
+        document.getElementById("qr-result-checkout").textContent = "❌ QR ไม่ถูกต้อง";
+      }
+    },
+    (errorMessage) => {
+      console.warn("สแกนไม่ได้:", errorMessage);
     }
+  ).catch(err => {
+    console.error("เกิดข้อผิดพลาดในการสแกน:", err);
+  });
+}
+
+
+
+
+   
 
     function toggleQRCode(type) {
       const qrDiv = document.getElementById(`${type}-qr`);
@@ -389,7 +555,7 @@ async function saveQRCodeToDatabase(codeData, type, dateStr) {
     }
 
     async function viewAttendanceLog() {
-      const { data, error } = await supabase.from("attendence_log").select("*").order("timestamp", { ascending: false });
+      const { data, error } = await supabase.from("attendance_log").select("*").order("timestamp", { ascending: false });
 
       const logDiv = document.getElementById("attendance-log");
       if (error) {
@@ -751,10 +917,12 @@ function closeNavbar() {
             <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('payroll'); closeNavbar()">💸 สลิปออนไลน์</a></li>
             <p class="text-white me-auto mb-2 mb-lg-0">รายการขออนุมัติ</p>
             <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('leave-form'); closeNavbar()">📄 เพิ่มบันทึกการลา</a></li>
-            <li id="admin-menu-mobile" class="nav-item" style="display:none;">
-              <p class="text-white me-auto mb-2 mb-lg-0">สำหรับผู้ดูแล</p>
-              <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('admin')">🛠️ จัดการระบบ</a></li>
-          <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('request')">⏳ รายการรออนุมัติ</a></li>
+            <li id="admin-menu-mobile" class="nav-item d-none">
+              <p class="text-white">สำหรับผู้ดูแล</p>
+              <ul class="nav flex-column ms-3">
+                <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('admin')">🛠️ จัดการระบบ</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('request')">⏳ รายการรออนุมัติ</a></li>
+              </ul>
             </li>
           </ul>
           <button class="btn btn-light mt-2" onclick="logout()">ออกจากระบบ</button>
@@ -775,16 +943,28 @@ function closeNavbar() {
         <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('payroll')">💸 สลิปออนไลน์</a></li>
         <p class="text-white me-auto mb-2 mb-lg-0">รายการขออนุมัติ</p>
         <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('leave-form')">📄 เพิ่มบันทึกการลา</a></li>
-        <li id="admin-menu" class="nav-item" style="display:none;">
-          <p class="text-white me-auto mb-2 mb-lg-0">สำหรับผู้ดูแล</p>
-          <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('admin')">🛠️ จัดการระบบ</a></li>
-          <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('request')">⏳ รายการรออนุมัติ</a></li>
+
+        <li id="admin-menu" class="nav-item d-none">
+          <p class="text-white">สำหรับผู้ดูแล</p>
+          <ul class="nav flex-column ms-3">
+            <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('admin')">🛠️ จัดการระบบ</a></li>
+            <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('request')">⏳ รายการรออนุมัติ</a></li>
+          </ul>
         </li>
+        
+        
+       
+
       </ul>
       <button class="btn btn-light mt-4" onclick="logout()">ออกจากระบบ</button>
     </div>
   </div>
   
+  <div id="admin-menu" style="display: none;">
+    <p class="text-white me-auto mb-2 mb-lg-0">สำหรับผู้ดูแล</p>
+    <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('admin')">🛠️ จัดการระบบ</a></li>
+    <li class="nav-item"><a class="nav-link text-white" href="#" onclick="showSection('request')">⏳ รายการรออนุมัติ</a></li>
+  </div>
 
   <!-- 🔹 Main Content -->
   <div class="main-content">
@@ -815,19 +995,20 @@ function closeNavbar() {
         <!-- ปุ่มเริ่มการสแกน -->
         <button class="btn btn-success mt-3" onclick="startScan()">เริ่มแสกน</button>
         <button class="btn btn-danger mt-3" onclick="stopScan()">หยุดแสกน</button>
-        <div id="qr-reader" style="width:300px;height:300px;"></div>
-        <div id="qr-result" class="mt-3 text-center text-success fw-bold"></div>
+        <div id="qr-reader" style="width:250px;height:250px;"></div>
+        <div id="qr-result" class="mt-3 text-center"></div>
       </div>
-
+      
       <div id="checkout" class="section">
-        <h2>🔴 เช็คชื่อออก</h2>
-        <p>กรุณาสแกน QR Code ที่ได้รับจากแอดมินเพื่อเช็คชื่อออก</p>
-        <!-- ปุ่มเริ่มการสแกน -->
-        <button class="btn btn-success mt-3" onclick="startScanCheckout()">เริ่มแสกน</button>
-        <button class="btn btn-danger mt-3" onclick="stopScan()">หยุดแสกน</button>
-        <div id="qr-reader-checkout" style="width:300px;height:300px;"></div>
-        <div id="qr-result" class="mt-3 text-center text-success fw-bold"></div>
+          <h2>🔴 เช็คชื่อออก</h2>
+          <p>กรุณาสแกน QR Code ที่ได้รับจากแอดมินเพื่อเช็คชื่อออก</p>
+          <!-- ปุ่มเริ่มการสแกน -->
+          <button class="btn btn-success mt-3" onclick="startScanCheckout()">เริ่มแสกน</button>
+          <button class="btn btn-danger mt-3" onclick="stopScan()">หยุดแสกน</button>
+          <div id="qr-reader-checkout" style="width:250px;height:250px;"></div>
+          <div id="qr-result-checkout" class="mt-3 text-center"></div>
       </div>
+    
 
       <div id="calendar-page" class="section">
         <h2>📅 ปฏิทินกิจกรรม</h2>
@@ -1131,7 +1312,7 @@ function closeNavbar() {
         
 
         <div class="mb-4">
-          <h4>📜 ประวัติเช็คอิน/เช็คเอาท์</h4>
+          <h4>📜 ประวัติเข้างาน/เลิกงาน</h4>
           <button class="btn btn-outline-secondary" onclick="viewAttendanceLog()">📅 ดูประวัติ</button>
           <div id="attendance-log"></div>
         </div>

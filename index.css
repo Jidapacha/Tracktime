@@ -69,6 +69,15 @@
 .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
   background-color: #00796b;
   color: white;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 32px;
+  width: 32px;
+  line-height: 1;
+  border-radius: 50%;
+  margin: 0 auto;
 }
 
 /* ซ่อนวันนอกเดือนนี้ */
@@ -83,16 +92,91 @@
   background-color: transparent !important; /* ทำให้พื้นหลังโปร่งใส */
 }
 
-.fc-scrollgrid,
-.fc-scrollgrid-section,
-.fc-scrollgrid-sync-table {
-  border: none !important;
+/* ลบพื้นหลังสีเทาที่แถวหัวตาราง (วันในสัปดาห์) และเซลล์วัน */
+.fc-daygrid-day,
+.fc-col-header-cell,
+.fc-scrollgrid-sync-inner,
+.fc-scrollgrid-section-header,
+.fc-scrollgrid-section-body,
+.fc-daygrid-day-top {
+  background-color: transparent !important;
 }
 
-/* ลบช่องว่างใต้กิจกรรม */
-.fc .fc-daygrid-body-natural .fc-daygrid-day-events {
-  margin-bottom: 0px;
+/* ลบเส้นกรอบตารางทั้งหมด */
+.fc-scrollgrid,
+.fc-scrollgrid-section,
+.fc-scrollgrid-sync-table,
+.fc-daygrid-day,
+.fc-col-header-cell {
+  border: none !important;
+  box-shadow: none !important;
 }
+
+/* ปรับ padding ให้เรียบง่ายยิ่งขึ้น */
+.fc-daygrid-day-frame {
+  padding: 4px 0 !important;
+}
+
+/* ป้องกันสีพื้นหลังจากภายนอก */
+.fc .fc-daygrid-body-natural {
+  background-color: transparent !important;
+}
+
+.fc-scrollgrid,
+.fc-view-harness,
+.fc-view,
+.fc {
+  border-right: none !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+
+.fc * {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.fc .fc-daygrid-body-natural .fc-daygrid-day-events{
+  margin-bottom: 0;
+}
+
+@media (max-width: 480px) {
+  /* .fc-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  } */
+
+  .fc-toolbar-chunk {
+    margin-bottom: 4px;
+  }
+
+  .fc-toolbar-title {
+    font-size: 1.1rem;
+  }
+
+  .fc-button {
+    font-size: 1rem !important;
+  }
+  .fc-daygrid-day-number {
+    height: 28px;
+    width: 28px;
+    font-size: 0.9rem;
+  }
+
+  .fc-toolbar-title {
+    font-size: 0.5rem;
+  }
+
+  
+}
+
+
+/* บังคับ container หลักของ FullCalendar ไม่ให้มี border ด้านขวา */
+#calendar > div {
+  border-right: none !important;
+  box-shadow: none !important;
+}
+
 
 /* จุดแสดงกิจกรรมใต้วันที่ */
 .dots-container {
@@ -237,3 +321,28 @@ a {
       margin-left: 250px; /* เผื่อพื้นที่ sidebar */
     }
   }
+
+
+/* เพิ่มพื้นที่ให้กล้อง */
+#qr-reader, #qr-reader-checkout {
+  width: 100%;  /* ทำให้กล้องขยายเต็มความกว้างของกรอบ */
+  max-width: 250px;  /* ตั้งค่าความกว้างสูงสุด */
+  height: 250px;  /* ตั้งค่าความสูง */
+  margin: 20px auto;  /* จัดกลางและระยะห่างจากขอบ */
+  border: 2px solid #ddd;  /* ขอบกรอบกล้อง */
+  border-radius: 8px;  /* มุมโค้ง */
+  background-color: #fff;  /* สีพื้นหลัง */
+  display: flex;
+  justify-content: center;  /* จัดกลางกรอบ */
+  align-items: center;  /* จัดกลางกรอบ */
+}
+
+/* ตั้งค่ากรอบให้เหมาะสมกับกล้อง */
+#qr-reader iframe, #qr-reader-checkout iframe {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+}
+
+
+  
