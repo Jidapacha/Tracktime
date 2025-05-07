@@ -1,0 +1,241 @@
+.fc {
+    font-family: 'Prompt', sans-serif;
+  }
+  
+  /* พื้นหลังปฏิทิน */
+  #calendar {
+    background-color: white;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    margin-top: 1rem;
+  }
+  
+  /* Toolbar */
+  .fc-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 1rem;
+  }
+  
+  .fc-toolbar-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #00796b;
+  }
+  
+  .fc-button {
+    background-color: transparent !important;
+    border: none !important;
+    color: #00796b !important;
+    font-size: 1.2rem !important;
+    padding: 4px !important;
+  }
+  
+  .fc-button:disabled {
+    opacity: 0.5;
+  }
+  
+  .fc-prev-button span,
+  .fc-next-button span {
+    font-size: 1.5rem;
+  }
+  
+  /* ส่วนหัววันในสัปดาห์ */
+  .fc-day-header {
+    background-color: transparent;
+    color: #2c3e50;
+    font-weight: 500;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 5px 0;
+  }
+  
+  /* ตัวเลขวันที่ */
+  .fc-daygrid-day-number {
+    color: #333;
+    font-size: 1rem;
+    text-align: center;
+    line-height: 32px; /* ทำให้ตัวเลขอยู่กลางช่อง */
+    height: 32px; /* ความสูงของแต่ละช่อง */
+    width: 32px; /* ความกว้างของแต่ละช่อง */
+    border-radius: 50%; /* ทำให้ตัวเลขมีลักษณะกลม */
+    display: inline-block;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+    background-color: #00796b;
+    color: white;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 32px;
+    width: 32px;
+    line-height: 1;
+    border-radius: 50%;
+    margin: 0 auto;
+  }
+  
+  /* ซ่อนวันนอกเดือนนี้ */
+  .fc-daygrid-day.fc-day-other {
+    visibility: hidden;
+  }
+  
+  /* เอาเส้นขอบและกริดออก */
+  .fc-daygrid-day-frame {
+    padding: 0 !important;
+    border: none !important;
+    background-color: transparent !important; /* ทำให้พื้นหลังโปร่งใส */
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+  
+  /* ลบพื้นหลังสีเทาที่แถวหัวตาราง (วันในสัปดาห์) และเซลล์วัน */
+  .fc-daygrid-day,
+  .fc-col-header-cell,
+  .fc-scrollgrid-sync-inner,
+  .fc-scrollgrid-section-header,
+  .fc-scrollgrid-section-body,
+  .fc-daygrid-day-top {
+    background-color: transparent !important;
+  }
+  
+  /* ลบเส้นกรอบตารางทั้งหมด */
+  .fc-scrollgrid,
+  .fc-scrollgrid-section,
+  .fc-scrollgrid-sync-table,
+  .fc-daygrid-day,
+  .fc-col-header-cell {
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  
+  
+  /* ป้องกันสีพื้นหลังจากภายนอก */
+  .fc .fc-daygrid-body-natural {
+    background-color: transparent !important;
+  }
+  
+  .fc-scrollgrid,
+  .fc-view-harness,
+  .fc-view,
+  .fc {
+    border-right: none !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+  }
+  
+  .fc * {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  
+  .fc .fc-daygrid-body-natural .fc-daygrid-day-events{
+    margin-bottom: 0;
+  }
+  
+  @media (max-width: 480px) {
+    /* .fc-toolbar {
+      flex-direction: column;
+      align-items: flex-start;
+    } */
+  
+    .fc-toolbar-chunk {
+      margin-bottom: 4px;
+    }
+  
+    .fc-toolbar-title {
+      font-size: 1.1rem;
+    }
+  
+    .fc-button {
+      font-size: 1rem !important;
+    }
+    .fc-daygrid-day-number {
+      height: 28px;
+      width: 28px;
+      font-size: 0.9rem;
+    }
+  
+    .fc-toolbar-title {
+      font-size: 0.5rem;
+    }
+  
+    
+  }
+  
+  
+  /* บังคับ container หลักของ FullCalendar ไม่ให้มี border ด้านขวา */
+  #calendar > div {
+    border-right: none !important;
+    box-shadow: none !important;
+  }
+  
+  
+  /* จุดแสดงกิจกรรมใต้วันที่ */
+  .dots-container {
+    display: flex;
+    gap: 3px;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  
+  .dot.leave {
+    background-color: #ff9800; /* ส้ม */
+  }
+  
+  .dot.holiday {
+    background-color: #f44336; /* แดง */
+  }
+  
+  .dot.workday {
+    background-color: #4caf50; /* เขียว */
+  }
+  
+  a {
+    text-decoration: none !important;
+    color: #333;
+  }
+
+  .fc-daygrid-day-number {
+    pointer-events: none;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .fc-daygrid-day-number > a {
+    all: unset !important;
+    pointer-events: none;
+    display: none !important;
+  }
+
+  .custom-date-number {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .fc-daygrid-day-top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 4px 0;
+  }
+  

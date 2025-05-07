@@ -1,25 +1,35 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+// App.js
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import LoginPage from './components/LoginPage';
+import HomePage from './components/HomePage';
+import CheckInPage from './components/CheckInPage';
+import CheckOutPage from './components/CheckOutPage';
+import CalendarPage from './components/CalendarPage';
+import NotiPage from './components/NotiPage';
+import PayrollPage from './components/PayrollPage';
+import AdminPage from './components/AdminPage';
+import LeavePage from './components/LeavePage';
+import RequestPage from './components/RequestPage';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/checkin" element={<CheckInPage />} />
+        <Route path="/checkout" element={<CheckOutPage />} />
+        <Route path="/calendar-page" element={<CalendarPage />} />
+        <Route path="/notifications" element={<NotiPage />} />
+        <Route path="/payroll" element={<PayrollPage />} />
+        <Route path="/leave-form" element={<LeavePage />} />
+        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/request" element={<RequestPage />} />
+      </Routes>
+    </Router>
   );
 }
+
 
 export default App;

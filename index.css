@@ -1,4 +1,8 @@
+body { font-family: 'Prompt', sans-serif; }
+    .section { display: none; }
+    .section.active { display: block; }
 /* ฟอนต์หลัก */
+
 .fc {
   font-family: 'Prompt', sans-serif;
 }

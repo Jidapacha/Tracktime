@@ -1,0 +1,47 @@
+
+.navbar-custom {
+    background-color: #198754 !important; /* สีเขียว Bootstrap */
+    color: white;
+  }
+  
+.navbar-custom .nav-link,
+.navbar-custom .navbar-brand,
+.navbar-custom p {
+    color: white !important;
+  }
+  
+  .navbar-custom .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+  }
+  
+  .sidebar-custom {
+    background-color: #198754;
+    color: white;
+    min-width: 250px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 1rem;
+  }
+  
+  .sidebar-custom .nav-link,
+  .sidebar-custom p {
+    color: white !important;
+  }
+  
+  .sidebar-custom .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+  }
+  
+  .logout-btn {
+    margin-top: 1rem;
+  }
+  
+  .nav-item {
+    margin-bottom: 0.2rem; 
+    
+  }
+ 
