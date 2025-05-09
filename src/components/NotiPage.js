@@ -16,11 +16,13 @@ function NotiPage() {
 
     return (
         <div>
-            <NavbarPage showSection={showSection}/>
+            <NavbarPage showSection={showSection} />
             <div className="main-content">
-                <div id="notifications" className="section">
-                    <h2>🔔 แจ้งเตือน</h2>
-                
+                <div className="container py-4" id="main-content">
+                    <div id="notifications" className="section">
+                        <h2>🔔 แจ้งเตือน</h2>
+                    
+                    </div>
                 </div>
             </div>
         </div>

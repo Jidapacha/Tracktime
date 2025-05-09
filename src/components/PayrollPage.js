@@ -16,11 +16,14 @@ function PayrollPage() {
 
     return (
         <div>
-            <NavbarPage showSection={showSection}/>
-        <div id="payroll" className="section">
-            <h2>💸 สลิปเงินเดือน</h2>
-        
-        </div>
+            <NavbarPage showSection={showSection} />
+            <div className="main-content">
+                <div className="container py-4" id="main-content">
+                    <div id="payroll" className="section">
+                        <h2>💸 สลิปเงินเดือน</h2>
+                    </div>
+                </div>
+            </div>
         </div>
     )
 }

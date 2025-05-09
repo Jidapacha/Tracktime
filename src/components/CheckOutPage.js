@@ -20,21 +20,18 @@ function CheckOutPage() {
     
     function getLocalTimestamp() {
         const date = new Date();
-        const options = {
-            timeZone: 'Asia/Bangkok',
-            hour12: false,
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            fractionalSecondDigits: 3,
-        };
-        const localTime = new Intl.DateTimeFormat('en-GB', options).format(date);
-        return localTime.replace(",", "");
+        const timezoneOffset = 7 * 60; // Bangkok +7 ชั่วโมง
+        const localDate = new Date(date.getTime() + timezoneOffset * 60000);
+      
+        const year = localDate.getFullYear();
+        const month = String(localDate.getMonth() + 1).padStart(2, '0');
+        const day = String(localDate.getDate()).padStart(2, '0');
+        const hour = String(localDate.getHours()).padStart(2, '0');
+        const minute = String(localDate.getMinutes()).padStart(2, '0');
+        const second = String(localDate.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hour}:${minute}:${second}`; 
     }
-
+      
     function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
         const R = 6371e3;
         const φ1 = lat1 * Math.PI / 180;
