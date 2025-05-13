@@ -10,14 +10,6 @@ import { supabase } from '../supabaseClient';
 const HomePage = () => {
     const navigate = useNavigate();
     const [employee, setEmployee] = useState(null);
-    const [error, setError] = useState('');
-    const [datetime, setDatetime] = useState('');
-    const [isAdmin, setIsAdmin] = useState(false);
-
-    const [showCheckInQR, setShowCheckInQR] = useState(false);
-    const [showCheckOutQR, setShowCheckOutQR] = useState(false);
-    const [checkInQRUrl, setCheckInQRUrl] = useState('');
-    const [checkOutQRUrl, setCheckOutQRUrl] = useState('');
 
     useEffect(() => {
       const fetchUser = async () => {
@@ -40,47 +32,11 @@ const HomePage = () => {
       }
 
       setEmployee(data);
-      setIsAdmin(data.role === 'admin');
     };
 
     fetchUser();
     }, [navigate]);
 
-    if (error) return <div style={{ color: 'red' }}>{error}</div>;
-
-    async function toggleQRCode(type) {
-    const today = new Date().toISOString().split("T")[0];
-    const codeData = `qr-code-${type}-${today}`;
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${codeData}`;
-
-    await saveQRCodeToDatabase(codeData, type, today);
-
-    if (type === "check-in") {
-      setCheckInQRUrl(qrUrl);
-      setShowCheckInQR(prev => !prev);
-    } else if (type === "check-out") {
-      setCheckOutQRUrl(qrUrl);
-      setShowCheckOutQR(prev => !prev);
-    }
-    }
-
-    async function saveQRCodeToDatabase(codeData, type, dateStr) {
-    const { data, error } = await supabase
-      .from("daily_qr_codes")
-      .upsert([
-        {
-          date: dateStr,
-          qr_code_text: codeData,
-          type: type,
-        }
-      ], { onConflict: ['date', 'type'] });
-
-    if (error) {
-      console.error("❌ บันทึก QR ลงฐานข้อมูลไม่สำเร็จ:", error.message);
-    } else {
-      console.log("✅ บันทึก QR ลงฐานข้อมูลแล้ว");
-    }
-    }
 
     const showSection = (id) => {
       const sections = document.querySelectorAll('.section');
@@ -127,34 +83,9 @@ const HomePage = () => {
               </div>
             </div>
 
-            {/* แสดงปุ่ม QR สำหรับแอดมิน */}
-            {isAdmin && (
-              <div className="mb-4">
-                <h4>📦 QR Code สำหรับวันนี้</h4>
-                <button className="btn btn-outline-success" onClick={() => toggleQRCode("check-in")}>
-                  🔄 สร้าง QR สำหรับเข้าทำงาน
-                </button>
-                {showCheckInQR && (
-                  <div>
-                    <h5>QR Code สำหรับการเข้างาน:</h5>
-                    <img src={checkInQRUrl} alt="Check-in QR" />
-                  </div>
-                )}
-
-                <button className="btn btn-outline-danger" onClick={() => toggleQRCode("check-out")}>
-                  🔄 สร้าง QR สำหรับออกงาน
-                </button>
-                {showCheckOutQR && (
-                  <div>
-                    <h5>QR Code สำหรับการออกงาน:</h5>
-                    <img src={checkOutQRUrl} alt="Check-out QR" />
-                  </div>
-                )}
               </div>
-            )}
           </div>
         </div>
-      </div>
       </div>
     );
 };

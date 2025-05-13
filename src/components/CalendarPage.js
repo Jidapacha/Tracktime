@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { supabase } from '../supabaseClient';
 import '@fullcalendar/core/locales/th';
+import interactionPlugin from '@fullcalendar/interaction';
 import { Calendar } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import NavbarPage from './NavbarPage';
@@ -12,16 +13,22 @@ function CalendarPage() {
   const calendarRef = useRef(null);
 
   function markMondaysAsHoliday(dayTypes, startDate, endDate) {
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-      if (d.getDay() === 1) {
-        const dateStr = d.toISOString().split('T')[0];
+    const current = new Date(startDate.getTime());
+    const end = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate()); 
+  
+    while (current <= end) {
+      if (current.getDay() === 2) {
+        const dateStr = current.toISOString().split('T')[0];
         if (!dayTypes[dateStr]) dayTypes[dateStr] = [];
-        if (!dayTypes[dateStr].includes('holiday')) {
-          dayTypes[dateStr].push('holiday');
+        if (!dayTypes[dateStr].includes('mondayHoliday')) {
+          dayTypes[dateStr].push('mondayHoliday');
         }
       }
+      current.setDate(current.getDate() + 1);
     }
   }
+  
+
 
   function parseDateLocal(dateStr) {
     const [year, month, day] = dateStr.split('-').map(Number);
@@ -82,7 +89,7 @@ function CalendarPage() {
       });
 
       const calendar = new Calendar(calendarEl, {
-        plugins: [dayGridPlugin],
+        plugins: [dayGridPlugin, interactionPlugin],
         initialView: 'dayGridMonth',
         locale: 'th',
         height: 'auto',
@@ -96,7 +103,7 @@ function CalendarPage() {
         },
 
         dayCellContent: function (arg) {
-          if (arg.isOther) return { html: '' }; // ไม่แสดงวันนอกเดือน
+          if (arg.isOther) return { html: '' }; 
         
           const day = arg.date.getDate();
           const dateStr = `${arg.date.getFullYear()}-${String(arg.date.getMonth() + 1).padStart(2, '0')}-${String(arg.date.getDate()).padStart(2, '0')}`;
@@ -126,54 +133,79 @@ function CalendarPage() {
         
 
         dateClick: function (info) {
+          console.log('👉 วันที่ถูกคลิก:', info.dateStr); 
           const clickedDate = info.dateStr;
-          const types = dayTypes[clickedDate] || [];
-
+          const types = dayTypes[clickedDate] || [];   
+        
           const descriptionMap = {
             leave: 'วันลา',
             holiday: 'วันหยุด',
             workday: 'เข้าทำงาน',
             mondayHoliday: 'วันหยุดประจำบริษัท',
           };
-
+        
           const readable = types.length > 0 ? types.map(type => descriptionMap[type] || type).join(', ') : 'ไม่มีข้อมูล';
-
+        
           const holiday = holidayRes.data.find(h => h.date === clickedDate);
           const holidayTitle = holiday ? holiday.title : null;
-
+        
           const detailsEl = document.getElementById('calendar-details');
-          detailsEl.innerHTML = `
-            <h5>📅 วันที่ ${clickedDate}</h5>
-            <p><strong>สถานะ:</strong> ${readable}</p>
-            ${holidayTitle ? `<p><strong>กิจกรรม/วันหยุด:</strong> ${holidayTitle}</p>` : ''}
-          `;
+          if (detailsEl) {
+            detailsEl.innerHTML = `
+              <h5>📅 วันที่ ${clickedDate}</h5>
+              <p><strong>สถานะ:</strong> ${readable}</p>
+              ${holidayTitle ? `<p><strong>กิจกรรม/วันหยุด:</strong> ${holidayTitle}</p>` : ''}
+            `;
+          } else {
+            console.warn('❌ ไม่พบ calendar-details');
+          }
         },
 
         datesSet: function (info) {
           Object.keys(dayTypes).forEach(date => {
-            const types = dayTypes[date];
             const d = parseDateLocal(date);
             if (d.getDay() === 1) {
-              const index = types.indexOf('holiday');
-              if (index !== -1) {
-                types.splice(index, 1);
-                if (types.length === 0) delete dayTypes[date];
-              }
+              dayTypes[date] = dayTypes[date].filter(type => type !== 'holiday');
+              if (dayTypes[date].length === 0) delete dayTypes[date];
             }
           });
 
           markMondaysAsHoliday(dayTypes, info.start, new Date(info.end.getTime() - 1));
+          calendar.render();
+
         },
       });
 
-      const view = calendar.view || calendar.getCurrentData().view;
-      if (view) {
-        markMondaysAsHoliday(dayTypes, view.currentStart, new Date(view.currentEnd.getTime() - 1));
-      }
-
+      
       console.log(dayTypes);
       calendar.render();
       calendarRef.current = calendar;
+      
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+      const typesToday = dayTypes[todayStr] || [];
+
+      const descriptionMap = {
+        leave: 'วันลา',
+        holiday: 'วันหยุด',
+        workday: 'เข้าทำงาน',
+        mondayHoliday: 'วันหยุดประจำบริษัท',
+      };
+
+      const readableToday = typesToday.length > 0
+        ? typesToday.map(type => descriptionMap[type] || type).join(', ')
+        : 'ไม่มีข้อมูล';
+
+      const holidayToday = holidayRes.data.find(h => h.date === todayStr);
+      const holidayTitleToday = holidayToday ? holidayToday.title : null;
+
+      const detailsEl = document.getElementById('calendar-details');
+      detailsEl.innerHTML = `
+        <h5>📅 วันที่ ${todayStr}</h5>
+        <p><strong>สถานะ:</strong> ${readableToday}</p>
+        ${holidayTitleToday ? `<p><strong>กิจกรรม/วันหยุด:</strong> ${holidayTitleToday}</p>` : ''}
+      `;
+
     };
 
     loadCalendar();

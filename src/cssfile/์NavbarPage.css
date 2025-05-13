@@ -1,47 +1,111 @@
+.btn{
+  margin-bottom: 10px !important;
+}
+
 
 .navbar-custom {
-    background-color: #198754 !important; /* สีเขียว Bootstrap */
-    color: white;
-  }
-  
+  background-color: #157347 !important;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-bottom: 2px solid #106b3f;
+}
+
 .navbar-custom .nav-link,
 .navbar-custom .navbar-brand,
 .navbar-custom p {
-    color: white !important;
-  }
-  
-  .navbar-custom .nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 5px;
-  }
-  
+  color: white !important;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.navbar-custom .nav-link:hover,
+.navbar-custom .navbar-brand:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+/* ปรับ <ul> ใน navbar ของ mobile ให้ชิดซ้าย */
+.navbar-collapse .navbar-nav {
+  padding-left: 1rem;
+}
+
+/* ปรับให้ปุ่มเมนู (button) มีลักษณะเหมือนลิงก์ และชิดซ้าย */
+.navbar-collapse .nav-item button.nav-link {
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.5rem 1rem;
+  display: flex;
+  gap: 0.5rem;
+  font-size: 1rem;
+  color: white;
+}
+
+.navbar-collapse .nav-item button.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 5px;
+}
+
+
+.sidebar-custom {
+  background-color: #198754;
+  color: white;
+  min-width: 250px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow-y: auto;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  padding: 1rem 0.5rem;
+}
+
+.sidebar-custom .nav-link,
+.sidebar-custom p {
+  color: white !important;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+  text-align: left;
+  justify-content: flex-start;
+}
+
+.sidebar-custom .nav-link i {
+  min-width: 20px;
+  text-align: center;
+}
+
+.sidebar-custom .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.logout-btn {
+  margin-top: 1rem;
+  font-weight: bold;
+  width: 150px;
+  margin-left: 1rem;
+  margin-right: 1rem;
+  display: block;
+}
+
+
+
+@media (min-width: 992px) {
   .sidebar-custom {
-    background-color: #198754;
-    color: white;
-    min-width: 250px;
-    height: 100vh;
+    transform: translateX(0);
     position: fixed;
-    top: 0;
-    left: 0;
-    padding: 1rem;
   }
-  
-  .sidebar-custom .nav-link,
-  .sidebar-custom p {
-    color: white !important;
+}
+
+
+@media (max-width: 991.98px) {
+  .sidebar-custom {
+    display: none;
   }
-  
-  .sidebar-custom .nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 5px;
-  }
-  
-  .logout-btn {
-    margin-top: 1rem;
-  }
-  
-  .nav-item {
-    margin-bottom: 0.2rem; 
-    
-  }
- 
+}

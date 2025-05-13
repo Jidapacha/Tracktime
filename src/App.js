@@ -11,6 +11,7 @@ import PayrollPage from './components/PayrollPage';
 import AdminPage from './components/AdminPage';
 import LeavePage from './components/LeavePage';
 import RequestPage from './components/RequestPage';
+import AttendancePage from './components/AttendancePage';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/leave-form" element={<LeavePage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/request" element={<RequestPage />} />
+        <Route path="/attendance-log" element={<AttendancePage />} />
       </Routes>
     </Router>
   );

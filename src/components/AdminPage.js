@@ -395,13 +395,6 @@ function AdminPage() {
 
                         </div>
 
-
-                        <div className="mb-4">
-                            <h4>📜 ประวัติเข้างาน/เลิกงาน</h4>
-                            <button className="btn btn-outline-secondary" onClick={viewAttendanceLog}>📅 ดูประวัติ</button>
-                            <div id="attendance-log"></div>
-                        </div>
-
                         <div className="mb-4">
                             <h4>📦 QR Code สำหรับวันนี้</h4>
                             <button className="btn btn-outline-success me-2 mb-2" onClick={() => toggleQRCode("check-in")}>

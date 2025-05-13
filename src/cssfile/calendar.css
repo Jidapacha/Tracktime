@@ -119,6 +119,11 @@
   background-color: #f44336;
 }
 
+.dot.mondayHoliday {
+  background-color: #f44336;
+}
+
+
 .dot.workday {
   background-color: #4caf50;
 }
@@ -230,3 +235,5 @@
     font-size: 0.7rem;
   }
 }
+
+
