@@ -3,6 +3,7 @@
 }
 
 
+
 .navbar-custom {
   background-color: #157347 !important;
   color: white;
@@ -49,7 +50,7 @@
 
 
 .sidebar-custom {
-  background-color: #198754;
+  background-color: #157347;
   color: white;
   min-width: 250px;
   height: 100vh;
@@ -103,9 +104,75 @@
   }
 }
 
+.mobile-sidebar {
+  position: fixed;
+  top: 0;
+  left: -250px;
+  width: 250px;
+  height: 100vh;
+  background-color: #157347;
+  color: white;
+  padding: 1rem;
+  transition: left 0.3s ease-in-out;
+  z-index: 1050;
+}
 
-@media (max-width: 991.98px) {
-  .sidebar-custom {
+.mobile-sidebar.open {
+  left: 0;
+}
+
+.mobile-sidebar .nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* ✅ ชิดซ้าย */
+  gap: 0.5rem; /* ✅ ระยะห่างระหว่าง emoji กับข้อความ */
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  width: 100%;
+  color: white;
+  font-size: 1rem;
+  text-align: left;
+  font-weight: 500;
+}
+
+.mobile-sidebar .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.mobile-sidebar .nav-link span {
+  min-width: 1.5rem; /* ทำให้ไอคอนทุกตัวกว้างเท่ากัน */
+  display: inline-block;
+}
+
+.mobile-sidebar .close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  float: right;
+}
+
+@media (min-width: 992px) {
+  .mobile-sidebar {
     display: none;
   }
+}
+
+/* ลบสีฟ้าเมื่อคลิกปุ่มหรือลิงก์ */
+.nav-link:focus,
+.nav-link:active,
+.nav-link:visited {
+  color: white !important;
+  outline: none;
+  box-shadow: none;
+}
+
+button:focus,
+button:active {
+  outline: none;
+  box-shadow: none;
 }

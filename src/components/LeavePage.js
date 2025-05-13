@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import NavbarPage from './NavbarPage';
 import { supabase } from '../supabaseClient';
+import '../cssfile/leave.css'
 
 function LeavePage() {
-  const [step, setStep] = useState('form');
+  const [step, setStep] = useState('summary');
+
   const [formData, setFormData] = useState({
     leaveType: 'sick',
     timeType: 'day',
@@ -61,8 +63,9 @@ function LeavePage() {
       alert('❌ เกิดข้อผิดพลาดในการส่งคำขอ: ' + error.message);
     } else {
       alert('✅ ส่งคำขอเรียบร้อยแล้ว!');
-      window.location.reload();
+      setStep('summary');
     }
+
   };
 
   const mapLeaveType = (value) => {
@@ -86,13 +89,47 @@ function LeavePage() {
     <div>
       <NavbarPage showSection={showSection} />
       <div className="main-content">
-        <div className="d-flex justify-content-center mt-4">
-          <div className="p-4 shadow rounded" style={{ width: '100%', maxWidth: '500px', backgroundColor: '#f9f9f9' }}>
+        <div id="leave" className="section">
+            <h2>📄 บันทึกการลา</h2>
+            <hr />
+            {step === 'summary' && (
+            <>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h4 className="mb-0">สิทธิคงเหลือ</h4>
+                <button className="btn btn-outline-success btn-sm" onClick={() => setStep('form')}>
+                  + เพิ่มบันทึกการลา
+                </button>
+              </div>
 
+              <table className="table leave-summary">
+
+
+                <thead>
+                  <tr>
+                    <th>ประเภท</th>
+                    <th>จำนวนวัน</th>
+                    <th>ชั่วโมง</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>ลากิจ</td><td>7 วัน</td><td>6 ชม.</td></tr>
+                  <tr><td>ลาป่วย</td><td>27 วัน</td><td>5 ชม.</td></tr>
+                  <tr><td>ลาพักร้อน</td><td>14 วัน</td><td>5 ชม.</td></tr>
+                </tbody>
+              </table>
+
+              <hr />
+              <h5>ประวัติการลา</h5>
+              <ul className="list-group list-group-flush small">
+                <li className="list-group-item">ลาป่วย 3 พ.ค. 2025 - 4 พ.ค. 2025
+                  <button className="btn btn-outline-secondary btn-status">ดูสถานะ</button>
+                </li>
+              </ul>
+            </>
+          )}
             {step === 'form' && (
               <>
-                <h2 className="text-center mb-4">📄 เพิ่มบันทึกการลา</h2>
-
+              <h4 className="text-center mb-4">เพิ่มบันทึกการลา</h4>
                 <div className="mb-3">
                   <label>📄 ระบุประเภทรายการ</label>
                   <select name="leaveType" className="form-control" value={formData.leaveType} onChange={handleChange}>
@@ -144,7 +181,10 @@ function LeavePage() {
                   <textarea name="remarks" className="form-control" rows="3" value={formData.remarks} onChange={handleChange} placeholder="เช่น เหตุผลในการลา..."></textarea>
                 </div>
 
-                <button className="btn btn-success w-100" onClick={handleSubmit}>ส่งคำขอ</button>
+                <div className="d-flex justify-content-between mt-4">
+                <button className="btn btn-secondary" onClick={() => setStep('summary')}>ย้อนกลับ</button>
+                <button className="btn btn-success" onClick={handleSubmit}>ส่งคำขอ</button>
+              </div>
               </>
             )}
 
@@ -182,7 +222,6 @@ function LeavePage() {
           </div>
         </div>
       </div>
-    </div>
   );
 }
 

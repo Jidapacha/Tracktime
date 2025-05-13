@@ -19,9 +19,9 @@ function AttendancePage() {
             <NavbarPage showSection={showSection} />
             <div className="main-content">
                 <div className="container py-4" id="main-content">
-                    <div id="payroll" className="section">
-                        <h2>📜 ประวัติเข้างาน/เลิกงาน</h2>
-                        
+                    <div id="attendence-log" className="section">
+                        <h2>📜 ประวัติทำงานของพนักงาน</h2>
+
                     </div>
                 </div>
             </div>
