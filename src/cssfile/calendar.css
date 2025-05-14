@@ -1,7 +1,8 @@
 :root {
-  --fc-neutral-bg-color: #ffffff !important;
+  --fc-neutral-bg-color: transparent !important;
   --fc-today-bg-color: transparent !important;
   --fc-border-color: transparent !important;
+  --fc-page-bg-color: transparent !important;
 }
 
 
@@ -20,7 +21,7 @@
   min-height: 100px;
   padding: 0;
   border: none;
-  background-color: #fff;
+  background-color: transparent;
   vertical-align: top;
 }
 
@@ -92,9 +93,6 @@
   justify-content: center;
 }
 
-.fc-daygrid-day.fc-day-today .fc-daygrid-day-frame {
-  background-color: white !important;
-}
 
 /* จุดสถานะใต้วันที่ */
 .dots-container {
@@ -129,7 +127,7 @@
 }
 
 .dot.empty {
-  background-color: #ffffff;
+  background-color: transparent;
 }
 
 .fc-daygrid-day.fc-day-other {

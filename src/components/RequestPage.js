@@ -113,7 +113,6 @@ function RequestPage() {
     <div>
       <NavbarPage showSection={showSection} />
       <div className="main-content">
-        <div className="container py-4" id="main-content">
           <div id="request" className="section">
             <h2>⏳ รายการรออนุมัติ</h2>
 
@@ -170,7 +169,6 @@ function RequestPage() {
             )}
           </div>
         </div>
-      </div>
     </div>
   );
 }

@@ -18,12 +18,10 @@ function NotiPage() {
         <div>
             <NavbarPage showSection={showSection} />
             <div className="main-content">
-                <div className="container py-4" id="main-content">
                     <div id="notifications" className="section">
                         <h2>🔔 แจ้งเตือน</h2>
                     
                     </div>
-                </div>
             </div>
         </div>
     )

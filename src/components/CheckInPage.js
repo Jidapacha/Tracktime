@@ -18,21 +18,6 @@ function CheckInPage() {
         }
     }, []);
 
-    function getLocalTimestamp() {
-        const date = new Date();
-        const timezoneOffset = 7 * 60; // Bangkok +7 ชั่วโมง
-        const localDate = new Date(date.getTime() + timezoneOffset * 60000);
-      
-        const year = localDate.getFullYear();
-        const month = String(localDate.getMonth() + 1).padStart(2, '0');
-        const day = String(localDate.getDate()).padStart(2, '0');
-        const hour = String(localDate.getHours()).padStart(2, '0');
-        const minute = String(localDate.getMinutes()).padStart(2, '0');
-        const second = String(localDate.getSeconds()).padStart(2, '0');
-        return `${year}-${month}-${day} ${hour}:${minute}:${second}`; 
-      }
-      
-
     function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
         const R = 6371e3;
         const φ1 = lat1 * Math.PI / 180;
@@ -86,7 +71,7 @@ function CheckInPage() {
     }
 
     async function saveCheckin() {
-        const timestamp = getLocalTimestamp();
+        const timestamp = new Date().toISOString();
         const { data: userData } = await supabase.auth.getUser();
         const email = userData?.user?.email;
 
@@ -134,7 +119,7 @@ function CheckInPage() {
 
                 const { error } = await supabase.from("attendance_log").insert([{
                     check_type: "check-in",
-                    timestamp: getLocalTimestamp(),
+                    timestamp: new Date().toISOString(),
                     employee_id: employeeId,
                     location: locationLabel,
                     latitude: latitude.toString(),
@@ -175,7 +160,6 @@ function CheckInPage() {
         <div>
             <NavbarPage showSection={showSection}/>
             <div className="main-content">
-                <div className="container py-4" id="main-content">
                     <div id="checkin" className="section">
                         <h2>🟢 เช็คชื่อเข้า</h2> 
                         <p>กรุณาสแกน QR Code ที่ได้รับจากแอดมินเพื่อเช็คชื่อเข้า</p>
@@ -186,7 +170,6 @@ function CheckInPage() {
                         <div id="qr-reader" style={{ width: '250px', height: '250px' }}></div>
                         <div id="qr-result" className="mt-3 text-center"></div>
                     </div>
-                </div>
             </div>
         </div>
     );

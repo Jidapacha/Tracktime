@@ -10,7 +10,6 @@ function AdminPage() {
     const [employees, setEmployees] = useState([]);
     const [editingEmployee, setEditingEmployee] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
-    const [attendanceLogs, setAttendanceLogs] = useState([]);
     const [logError, setLogError] = useState(null);
     const [showCheckInQR, setShowCheckInQR] = useState(false);
     const [showCheckOutQR, setShowCheckOutQR] = useState(false);
@@ -179,21 +178,6 @@ function AdminPage() {
       };
       
       
-      
-
-    
-
-    async function viewAttendanceLog() {
-        const { data, error } = await supabase.from("attendance_log").select("*").order("timestamp", { ascending: false });
-        if (error) {
-            setLogError("โหลดข้อมูลไม่สำเร็จ");
-            setAttendanceLogs([]);
-        } else {
-            setLogError(null);
-            setAttendanceLogs(data);
-        }
-    }
-
     
     function toggleQRCode(type) {
         const today = new Date().toISOString().split("T")[0];
@@ -232,10 +216,8 @@ function AdminPage() {
         <div>
             <NavbarPage showSection={showSection} />
             <div className="main-content">
-                <div className="container py-4" id="main-content">
                     <div id="admin" className="section">
-                        <h2>🛠️ จัดการระบบ</h2>
-                        <p>ยินดีต้อนรับผู้ดูแลระบบ</p>
+                        <h2>🛠️ การจัดการพนักงาน</h2><hr />
                         <div className="mb-4">
                             <h4>👥 จัดการพนักงาน</h4>
                             <button className="btn btn-outline-primary me-2 mb-2" onClick={toggleAddForm}>➕ เพิ่มพนักงาน</button>
@@ -422,7 +404,7 @@ function AdminPage() {
                     </div>
                 </div>
             </div>
-        </div>
+        
     )
 }
 

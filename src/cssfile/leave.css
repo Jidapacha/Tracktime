@@ -5,16 +5,13 @@ body, .main-content {
   color: #212529;
 }
 
-/* กล่องเนื้อหา */
-.main-content .container {
-  background-color: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  padding: 2rem 1.5rem;
-}
 
 .section{
     margin: 30px;
+    background-color: #f7f7f7;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+
 }
 
 button.btn {
@@ -22,6 +19,15 @@ button.btn {
   border-radius: 8px;
   padding: 0.5rem 1rem;
 }
+
+.btn-status:disabled {
+  cursor: default;
+  opacity: 1; 
+  pointer-events: none; 
+  border: none;
+  text-align: left;
+}
+
 
 /* ปุ่มเพิ่มบันทึก */
 .btn-outline-success {

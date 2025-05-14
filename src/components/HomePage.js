@@ -52,8 +52,6 @@ const HomePage = () => {
       <NavbarPage showSection={showSection}/>
       
       <div className="main-content">
-        <div className="container py-4" id="main-content">
-          {/* หน้าแรก */}
           <div id="home" className="section active">
             <h2>🏠 หน้าหลัก</h2>
             <div id="employee">
@@ -86,7 +84,7 @@ const HomePage = () => {
               </div>
           </div>
         </div>
-      </div>
+
     );
 };
 

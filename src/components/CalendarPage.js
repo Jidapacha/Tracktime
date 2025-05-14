@@ -222,13 +222,11 @@ function CalendarPage() {
     <div>
       <NavbarPage showSection={showSection} />
       <div className="main-content">
-        <div className="container py-4" id="main-content">
           <div id="calendar-page" className="section">
             <h2>📅 ปฏิทินกิจกรรม</h2>
             <div id="calendar"></div>
             <div id="calendar-details" className="mt-3 p-2 border rounded bg-light"></div>
           </div>
-        </div>
       </div>
     </div>
   );

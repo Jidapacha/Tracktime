@@ -18,19 +18,6 @@ function CheckOutPage() {
         }
     }, []);
     
-    function getLocalTimestamp() {
-        const date = new Date();
-        const timezoneOffset = 7 * 60; // Bangkok +7 ชั่วโมง
-        const localDate = new Date(date.getTime() + timezoneOffset * 60000);
-      
-        const year = localDate.getFullYear();
-        const month = String(localDate.getMonth() + 1).padStart(2, '0');
-        const day = String(localDate.getDate()).padStart(2, '0');
-        const hour = String(localDate.getHours()).padStart(2, '0');
-        const minute = String(localDate.getMinutes()).padStart(2, '0');
-        const second = String(localDate.getSeconds()).padStart(2, '0');
-        return `${year}-${month}-${day} ${hour}:${minute}:${second}`; 
-    }
       
     function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
         const R = 6371e3;
@@ -47,27 +34,26 @@ function CheckOutPage() {
         return R * c;
     }
 
-    function startScanCheckout() {
-        if (!qrScannerRef.current) {
-            qrScannerRef.current = new Html5Qrcode("qr-reader-checkout");
-        }
+    async function startScanCheckout() {
+        if (!qrScannerRef.current) return;
     
-        setHasScanned(false); // ✅ รีเซ็ตสถานะก่อนเริ่ม
+        setHasScanned(false); 
     
-        qrScannerRef.current.start(
+        try {
+        await qrScannerRef.current.start(
             { facingMode: "environment" },
             {
                 fps: 10,
                 qrbox: { width: 250, height: 250 }
             },
-        async (decodedText, decodedResult) => {
+            async (decodedText, decodedResult) => {
             if (hasScanned) return;
-            console.log("QR สแกนได้:", decodedText);
-    
+
             const todayCode = `qr-code-check-out-${new Date().toISOString().split('T')[0]}`;
-    
+            console.log("QR สแกนได้:", decodedText);
+
             if (decodedText === todayCode) {
-                setHasScanned(true); // ✅ ใช้ state
+                setHasScanned(true); 
                 await qrScannerRef.current.stop();
                 document.getElementById("qr-result-checkout").textContent = "✅ เช็คชื่อออกเรียบร้อย";
                 await saveCheckout();
@@ -78,13 +64,16 @@ function CheckOutPage() {
         (errorMessage) => {
             console.warn("สแกนไม่ได้:", errorMessage);
         }
-        ).catch(err => {
+        );}
+        catch(err) {
         console.error("เกิดข้อผิดพลาดในการสแกน:", err);
-        });
+        await qrScannerRef.current.stop();
+    }
     }
   
   
     async function saveCheckout() {
+        const timestamp = new Date().toISOString();
         const { data: userData } = await supabase.auth.getUser();
         const email = userData?.user?.email;
     
@@ -115,13 +104,6 @@ function CheckOutPage() {
             .gte("timestamp", startOfDay.toISOString())
             .lte("timestamp", endOfDay.toISOString());
     
-        console.log("Email:", email);
-        console.log("Employee Data:", empData);
-        console.log("Employee Error:", empErr);
-        console.log("Check Log:", checkLog);
-        console.log("Check Error:", checkErr);
-    
-    
         if (checkLog && checkLog.length > 0) {
             document.getElementById("qr-result-checkout").textContent = "✅ เช็คเอาท์ไปแล้ววันนี้";
             return;
@@ -142,23 +124,14 @@ function CheckOutPage() {
                 const { error } = await supabase.from("attendance_log").insert([
                 {
                     check_type: "check-out",
-                    timestamp: getLocalTimestamp(),
+                    timestamp: new Date().toISOString(),
                     employee_id: employeeId,
                     location: locationLabel,
                     latitude: latitude.toString(),
                     longitude: longitude.toString()
                 }
             ]);
-    
-            console.log("Insert Data:", {
-                check_type: "check-out",
-                timestamp: getLocalTimestamp(),
-                employee_id: employeeId,
-                location: locationLabel,
-                latitude: latitude.toString(),
-                longitude: longitude.toString()
-            });
-            console.log("Insert Error:", error);
+
     
             if (error) {
                 document.getElementById("qr-result-checkout").textContent = "❌ บันทึกไม่สำเร็จ";
@@ -195,7 +168,6 @@ function CheckOutPage() {
         <div>
             <NavbarPage showSection={showSection}/>
             <div className="main-content">
-                <div className="container py-4" id="main-content">
                     <div id="checkout" className="section">
                         <h2>🔴 เช็คชื่อออก</h2>
                         <p>กรุณาสแกน QR Code ที่ได้รับจากแอดมินเพื่อเช็คชื่อออก</p>
@@ -206,7 +178,6 @@ function CheckOutPage() {
                         <div id="qr-reader-checkout" style={{ width: '250px', height: '250px' }}></div>
                         <div id="qr-result-checkout" className="mt-3 text-center"></div>
                     </div>
-                </div>
             </div>
         </div>
     );

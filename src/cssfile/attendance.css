@@ -1,0 +1,52 @@
+/* === ตาราง === */
+.table-hover {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table thead th {
+  background-color: #e9ecef;
+  color: #212529;
+  font-weight: 600;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.table tbody td {
+  vertical-align: middle;
+}
+
+/* === Input & Select ด้านบน === */
+#attendence-log .mb-3.d-flex {
+  flex-wrap: wrap;
+}
+
+#attendence-log label {
+  font-weight: 500;
+}
+
+#attendence-log select,
+#attendence-log input[type="date"] {
+  font-size: 0.9rem;
+}
+
+/* === ไม่มีข้อมูล === */
+.table tbody td[colspan] {
+  background-color: #f8f9fa;
+  font-style: italic;
+  color: #6c757d;
+}
+
+/* === ส่วนหัวหน้า section === */
+.section h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}

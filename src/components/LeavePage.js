@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import NavbarPage from './NavbarPage';
 import { supabase } from '../supabaseClient';
@@ -6,7 +6,7 @@ import '../cssfile/leave.css'
 
 function LeavePage() {
   const [step, setStep] = useState('summary');
-
+  const [history, setHistory] = useState([]);
   const [formData, setFormData] = useState({
     leaveType: 'sick',
     timeType: 'day',
@@ -78,6 +78,50 @@ function LeavePage() {
     }
   };
 
+
+  useEffect(() => {
+    const fetchLeaveHistory = async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const email = userData?.user?.email;
+
+      const { data: empData, error: empError } = await supabase
+        .from('employees')
+        .select('employee_id')
+        .eq('email', email)
+        .single();
+
+      if (empError || !empData) return;
+
+      const { data: leaveData } = await supabase
+        .from('leave_days')
+        .select('*')
+        .eq('employee_id', empData.employee_id)
+        .order('start_date', { ascending: false });
+
+      setHistory(leaveData || []);
+    };
+
+    fetchLeaveHistory();
+  }, []);
+
+  const formatDate = (str) => {
+    const date = new Date(str);
+    return date.toLocaleDateString('th-TH', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+
+  const mapStatus = (status) => {
+    switch (status) {
+      case 'approved': return '✅ อนุมัติแล้ว';
+      case 'rejected': return '❌ ไม่อนุมัติ';
+      case 'pending': default: return '⏳ รอตรวจสอบ';
+    }
+  };
+
+
   const showSection = (id) => {
     const sections = document.querySelectorAll('.section');
     sections.forEach(section => section.classList.remove('active'));
@@ -112,21 +156,32 @@ function LeavePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td>ลากิจ</td><td>7 วัน</td><td>6 ชม.</td></tr>
-                  <tr><td>ลาป่วย</td><td>27 วัน</td><td>5 ชม.</td></tr>
-                  <tr><td>ลาพักร้อน</td><td>14 วัน</td><td>5 ชม.</td></tr>
+                  <tr><td>ลากิจ</td><td>6 วัน</td><td>0 ชม.</td></tr>
+                  <tr><td>ลาป่วย</td><td>30 วัน</td><td>0 ชม.</td></tr>
                 </tbody>
               </table>
 
               <hr />
               <h5>ประวัติการลา</h5>
-              <ul className="list-group list-group-flush small">
-                <li className="list-group-item">ลาป่วย 3 พ.ค. 2025 - 4 พ.ค. 2025
-                  <button className="btn btn-outline-secondary btn-status">ดูสถานะ</button>
-                </li>
+              <ul className="list-group list-group-flush small leave-history">
+                {history.length === 0 && (
+                  <li className="list-group-item text-muted">ไม่พบข้อมูลการลา</li>
+                )}
+
+                {history.map((leave, index) => (
+                  <li key={index} className="list-group-item">
+                    {mapLeaveType(leave.leave_type)}{' '}
+                    {leave.time_type === 'day'
+                      ? `${formatDate(leave.start_date)} - ${formatDate(leave.end_date)}`
+                      : `${formatDate(leave.start_date)} เวลา ${leave.start_time} - ${leave.end_time}`}
+                    <button className="btn btn-outline-secondary btn-status ms-2" disabled>
+                      {mapStatus(leave.status)}
+                    </button>
+                  </li>
+                ))}
               </ul>
-            </>
-          )}
+              </>
+            )}  
             {step === 'form' && (
               <>
               <h4 className="text-center mb-4">เพิ่มบันทึกการลา</h4>
@@ -135,7 +190,6 @@ function LeavePage() {
                   <select name="leaveType" className="form-control" value={formData.leaveType} onChange={handleChange}>
                     <option value="sick">ลาป่วย</option>
                     <option value="personal">ลากิจ</option>
-                    <option value="vacation">ลาพักร้อน</option>
                     <option value="other">อื่นๆ</option>
                   </select>
                 </div>

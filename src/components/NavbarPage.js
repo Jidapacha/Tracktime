@@ -45,7 +45,6 @@ function NavbarPage() {
 
   return (
     <div>
-      {/* Mobile Navbar */}
       <nav className="navbar navbar-light navbar-custom d-lg-none w-100">
         <div className="container-fluid">
           <button className="navbar-toggler text-white" type="button" onClick={() => setMobileMenuOpen(true)}>
