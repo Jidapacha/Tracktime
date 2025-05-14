@@ -49,9 +49,8 @@ const HomePage = () => {
 
     return (
       <div>
-      <NavbarPage showSection={showSection}/>
-      
-      <div className="main-content">
+        <NavbarPage showSection={showSection}/>  
+        <div className="main-content">
           <div id="home" className="section active">
             <h2>🏠 หน้าหลัก</h2>
             <div id="employee">
@@ -64,27 +63,27 @@ const HomePage = () => {
                   <p>อีเมล: {employee.email}</p>
                 </div>
               ) : (
-                <h2>กำลังโหลดข้อมูลพนักงาน...</h2>
+              <h2>กำลังโหลดข้อมูลพนักงาน...</h2>
               )}
-            </div>
-            <div id="datetime" className="mb-3 text-muted"></div>
-            <div className="mb-3 d-flex flex-column justify-content-center align-items-center gap-2">
-              <button className="btn btn-success w-50" onClick={() => showSection('checkin')}>🟢 บันทึกเข้า</button>
-              <button className="btn btn-danger w-50" onClick={() => showSection('checkout')}>🔴 บันทึกออก</button>
-            </div>
-            <div className="mb-4">
-              <h5>🔗 หัวข้อเพิ่ม</h5>
-              <div className="d-grid gap-2">
-                <button className="btn btn-outline-primary" onClick={() => showSection('calendar-page')}>📅 ปฏิทินกิจกรรม</button>
-                <button className="btn btn-outline-warning" onClick={() => showSection('notifications')}>🔔 แจ้งเตือน</button>
-                <button className="btn btn-outline-info" onClick={() => showSection('payroll')}>💸 สลิปเงินเดือน</button>
               </div>
-            </div>
+              <div id="datetime" className="mb-3 text-muted"></div>
+              <div className="checkin-checkout-wrapper">
+                <button className="btn btn-success" onClick={() => navigate('/checkin')}>🟢 บันทึกเข้า</button>
+                <button className="btn btn-danger" onClick={() => navigate('/checkout')}>🔴 บันทึกออก</button>
+              </div>
 
-              </div>
+              <div className="mb-4">
+                <h5>🔗 หัวข้อเพิ่ม</h5>
+                <div className="d-grid gap-2">
+                  <button className="btn btn-outline-primary" onClick={() => navigate('/calendar-page')}>📅 ปฏิทินกิจกรรม</button>
+                  <button className="btn btn-outline-warning" onClick={() => navigate('/notifications')}>🔔 แจ้งเตือน</button>
+                  <button className="btn btn-outline-info" onClick={() => navigate('/payroll')}>💸 สลิปเงินเดือน</button>
+                </div>
+              
+            </div>
           </div>
         </div>
-
+      </div>
     );
 };
 
