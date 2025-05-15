@@ -1,0 +1,56 @@
+
+@media (max-width: 576px) {
+  .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  #add-employee-form .form-control,
+  #add-employee-form .form-select,
+  form.row .form-control,
+  form.row .form-select {
+    width: 100%;
+  }
+
+  #add-employee-form .col-md-4,
+  form.row .col-md-4 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .list-group-item {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+
+  .list-group-item > div {
+    margin-top: 0.5rem;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  img[src*="qrserver"] {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
+  }
+
+  h5 {
+    text-align: center;
+  }
+  form .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  form .btn + .btn {
+    margin-left: 0 !important; /* ปิดการเยื้องของ ms-2 */
+  }
+
+  form .col-md-4 {
+    width: 100%;
+  }
+
+}

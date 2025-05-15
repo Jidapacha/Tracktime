@@ -176,3 +176,12 @@ button:active {
   outline: none;
   box-shadow: none;
 }
+
+@media (max-width: 576px) {
+  .logout-btn {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.75rem;
+    width: 100px;
+    margin: 1rem auto 0 auto; /* ตรงกลาง */
+  }
+}

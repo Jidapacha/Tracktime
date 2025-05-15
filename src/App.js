@@ -11,6 +11,7 @@ import AdminPage from './components/AdminPage';
 import LeavePage from './components/LeavePage';
 import RequestPage from './components/RequestPage';
 import AttendancePage from './components/AttendancePage';
+import EditTimePage from './components/EditTimePage';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/request" element={<RequestPage />} />
         <Route path="/attendance-log" element={<AttendancePage />} />
+        <Route path="/edit-time" element={<EditTimePage />} />
       </Routes>
     </Router>
   );

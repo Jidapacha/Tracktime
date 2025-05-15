@@ -1,0 +1,21 @@
+/* ให้ .col ใช้ flex เต็มความสูง */
+.col {
+  display: flex;
+}
+
+/* ให้ .card ขยายสูงเท่ากันทุกใบ */
+.card {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ให้ .card-body เต็มความสูงภายใน */
+.card-body {
+  flex-grow: 1;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* ช่องข้อมูลเว้นด้านล่าง */
+}

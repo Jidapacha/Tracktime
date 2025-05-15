@@ -13,6 +13,7 @@ function AttendancePage() {
     const [employeeOptions, setEmployeeOptions] = useState([]);
     const [workSummary, setWorkSummary] = useState(null);
     const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
+    const [companyHours, setCompanyHours] = useState({});
 
     function isLate(timestamp) {
         const checkinDate = new Date(timestamp);
@@ -35,7 +36,7 @@ function AttendancePage() {
         const fetchAttendance = async () => {
             const { data, error } = await supabase
                 .from('attendance_log')
-                .select(`timestamp, check_type, employee_id, employees:employee_id (name, username, role)`) 
+                .select(`timestamp, check_type, employee_id, company, employees:employee_id (name, username, role)`) 
                 .order('timestamp', { ascending: false });
 
             if (!error) {
@@ -58,49 +59,60 @@ function AttendancePage() {
     }, [selectedDate, checkType, selectedMonth, selectedEmployee]);
 
     const calculateWorkHours = (data) => {
-        if (selectedEmployee === 'all') {
-            setWorkSummary(null);
-            return;
+    if (selectedEmployee === 'all') {
+        setWorkSummary(null);
+        setCompanyHours({});
+        return;
+    }
+
+    const start = new Date(`${selectedMonth}-01T00:00:00+07:00`);
+    const end = new Date(start);
+    end.setMonth(end.getMonth() + 1);
+
+    const filteredLogs = data.filter(log => {
+        const logTime = new Date(log.timestamp);
+        return (
+            log.employee_id === parseInt(selectedEmployee) &&
+            logTime >= start && logTime < end
+        );
+    });
+
+    const companyTotals = {};
+    let totalMs = 0;
+
+    const logsByCompany = {};
+    filteredLogs.forEach(log => {
+        const comp = log.company || 'ไม่ระบุ';
+        if (!logsByCompany[comp]) logsByCompany[comp] = [];
+        logsByCompany[comp].push(log);
+    });
+
+    Object.entries(logsByCompany).forEach(([company, logs]) => {
+        const sortedLogs = logs.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        for (let i = 0; i < sortedLogs.length - 1; i++) {
+            const log1 = sortedLogs[i];
+            const log2 = sortedLogs[i + 1];
+            if (log1.check_type === 'check-in' && log2.check_type === 'check-out') {
+                const inTime = new Date(log1.timestamp);
+                const outTime = new Date(log2.timestamp);
+                const duration = outTime - inTime;
+                totalMs += duration;
+                companyTotals[company] = (companyTotals[company] || 0) + duration;
+                i++; // ข้าม log ถัดไปที่จับคู่แล้ว
+            }
         }
+    });
 
-        const start = new Date(`${selectedMonth}-01T00:00:00+07:00`);
-        const end = new Date(start);
-        end.setMonth(end.getMonth() + 1);
+    setWorkSummary((totalMs / 1000 / 60 / 60).toFixed(2));
 
-        const filteredLogs = data.filter(log => {
-            const logTime = new Date(log.timestamp);
-            return (
-                log.employee_id === parseInt(selectedEmployee) &&
-                logTime >= start && logTime < end
-            );
-        });
+    const formatted = {};
+    Object.entries(companyTotals).forEach(([comp, ms]) => {
+        formatted[comp] = (ms / 1000 / 60 / 60).toFixed(2);
+    });
+    setCompanyHours(formatted);
+};
 
-        const logsByDate = {};
 
-        filteredLogs.forEach(log => {
-            const dateKey = log.timestamp.slice(0, 10);
-            if (!logsByDate[dateKey]) {
-                logsByDate[dateKey] = [];
-            }
-            logsByDate[dateKey].push(log);
-        });
-
-        let totalMs = 0;
-
-        Object.values(logsByDate).forEach(dayLogs => {
-            const checkin = dayLogs.find(log => log.check_type === 'check-in');
-            const checkout = dayLogs.find(log => log.check_type === 'check-out');
-
-            if (checkin && checkout) {
-                const inTime = new Date(checkin.timestamp);
-                const outTime = new Date(checkout.timestamp);
-                totalMs += outTime - inTime;
-            }
-        });
-
-        const totalHrs = totalMs / 1000 / 60 / 60;
-        setWorkSummary(totalHrs > 0 ? totalHrs.toFixed(2) : null);
-    };
 
     const showSection = (id) => {
         const sections = document.querySelectorAll('.section');
@@ -149,11 +161,12 @@ function AttendancePage() {
                                     <th>เวลา</th>
                                     <th>ชื่อพนักงาน</th>
                                     <th>ตำแหน่ง</th>
+                                    <th>บริษัท</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {attendanceList.length === 0 && (
-                                    <tr><td colSpan="3" className="text-center">ไม่มีข้อมูลสำหรับวันนี้</td></tr>
+                                    <tr><td colSpan="4" className="text-center">ไม่มีข้อมูลสำหรับวันนี้</td></tr>
                                 )}
                                 {attendanceList.map((entry, index) => (
                                     <tr key={index}>
@@ -169,13 +182,14 @@ function AttendancePage() {
                                             {entry.employees?.username ? ` (${entry.employees.username})` : ''}
                                         </td>
                                         <td>{entry.employees?.role || '-'}</td>
+                                        <td>{entry.company || '-'}</td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
 
-                    <div className="mt-5">
+                    <div className="attendance-summary mb-2 mt-3">
                         <h4>📊 สรุปการทำงาน</h4>
                         <div className="d-flex align-items-center gap-2 mb-2">
                             <div className="summary-filter-wrapper">
@@ -213,17 +227,21 @@ function AttendancePage() {
                                 ) : (
                                 <>
                                     <p>
-                                    รวมเวลาทำงานทั้งหมดในเดือนนี้:{" "}
+                                    รวมเวลาทั้งหมดในเดือนนี้: {" "}
                                     <span className="fw-bold">
                                         {workSummary ? `${workSummary} ชั่วโมง` : 'ยังไม่มีข้อมูลสำหรับคำนวณ'}
                                     </span>
                                     </p>
-                                    <ul className="mt-2 mb-3">
-                                        <li>LL</li>
-                                        <li>Meta</li>
-                                        <li>Med</li>
-                                        <li>IRE</li>
-                                        <li>EDTech</li>
+                                    <ul className="attendance-summary">
+                                        {['LL', 'Meta', 'Med', 'IRE', 'EDTech'].map((comp) => (
+                                            <li key={comp}>
+                                            <span className="company-name">{comp}</span>
+                                            <span className="company-hours">
+                                                <span className="num">{companyHours[comp] || '0'}</span>
+                                                <span className="unit"> ชั่วโมง</span>
+                                            </span>
+                                            </li>
+                                        ))}
                                     </ul>
                                 </>
                             )}

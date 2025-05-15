@@ -82,6 +82,9 @@ function NavbarPage() {
           <li className="nav-item">
             <button className="nav-link btn btn-link" onClick={() => navigate('/leave-form')}>📄 เพิ่มบันทึกการลา</button>
           </li>
+          <li className="nav-item">
+            <button className="nav-link btn btn-link" onClick={() => navigate('/edit-time')}>🕒 แก้ไขเวลางาน</button>
+          </li>
           <div id="admin-menu-mobile" className="d-none">
             <li className="nav-item text-white fs-5 mb-2" style={{ pointerEvents: 'none' }}>
               สำหรับผู้ดูแล
@@ -127,6 +130,9 @@ function NavbarPage() {
           </li>
           <li className="nav-item">
             <button className="nav-link btn btn-link" onClick={() => navigate('/leave-form')}>📄 เพิ่มบันทึกการลา</button>
+          </li>
+          <li className="nav-item">
+            <button className="nav-link btn btn-link" onClick={() => navigate('/edit-time')}>🕒 แก้ไขเวลางาน</button>
           </li>
           <div id="admin-menu-desktop" className="d-none">
             <li className="nav-item text-white fs-5 mb-2" style={{ pointerEvents: 'none' }}>

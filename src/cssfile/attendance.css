@@ -1,216 +1,253 @@
+
 .table-hover {
-  border-radius: 8px;
-  overflow: hidden;
+border-radius: 8px;
+overflow: hidden;
 }
 
 .table thead th {
-  background-color: #e9ecef;
-  color: #212529;
-  font-weight: 600;
-  text-align: center;
-  vertical-align: middle;
-  
+background-color: #e9ecef;
+color: #212529;
+font-weight: 600;
+text-align: center;
+vertical-align: middle;
+
 }
 
-.table tbody td:first-child {
-  text-align: center;
+.table tbody td:first-child, td:last-child {
+text-align: center;
 }
-
 
 .table tbody td {
-  vertical-align: middle !important;
+vertical-align: middle !important;
 }
 
 .table-container {
-  max-height: calc(2.5rem * 8); 
-  overflow-y: auto;
-  border-radius: 8px;
+max-height: calc(2.5rem * 8);
+overflow-y: auto;
+border-radius: 8px;
 }
 
 .table-container .table {
-  margin-bottom: 0; 
+margin-bottom: 0;
 }
 
-
 #attendence-log .mb-3.d-flex {
-  flex-wrap: wrap;
+flex-wrap: wrap;
 }
 
 #attendence-log label {
-  font-weight: 500;
+font-weight: 500;
 }
 
 #attendence-log select,
 #attendence-log input[type="date"] {
-  font-size: 0.9rem;
+font-size: 0.9rem;
 }
 
 .table tbody td[colspan] {
-  background-color: #f8f9fa;
-  font-style: italic;
-  color: #6c757d;
+background-color: #f8f9fa;
+font-style: italic;
+color: #6c757d;
 }
 
 .section h2 {
-  font-size: 1.5rem;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 1rem;
+font-size: 1.5rem;
+font-weight: bold;
+display: flex;
+align-items: center;
+gap: 10px;
+margin-bottom: 1rem;
 }
 
 .text-danger {
-  color: #dc3545 !important;
+color: #dc3545 !important;
 }
 
 .date-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: nowrap;
+display: flex;
+align-items: center;
+gap: 0.5rem;
+flex-wrap: nowrap;
 }
 
 #attendence-log .date-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: nowrap;
-  width: 100%;
+display: flex;
+align-items: center;
+gap: 0.5rem;
+flex-wrap: nowrap;
+width: 100%;
 }
 
 .summary-filter-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: nowrap;
-  flex-direction: row;
-  flex: 1;
+display: flex;
+align-items: center;
+gap: 0.75rem;
+flex-wrap: nowrap;
+flex-direction: row;
+flex: 1;
 }
 
 .summary-filter-wrapper label {
-  white-space: nowrap;
-  margin-bottom: 0;
+white-space: nowrap;
+margin-bottom: 0;
 }
 
 .summary-filter-wrapper label,
 .summary-filter-wrapper select,
 .summary-filter-wrapper input[type="month"] {
-  width: auto;
-  max-width: 160px;
+width: auto;
+max-width: 160px;
 }
+
+.attendance-summary {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  margin-top: 1rem;
+  font-size: 1rem;
+}
+
+.attendance-summary li {
+  display: flex;
+  align-items: center;
+  padding: 0.25rem 0;
+}
+
+.company-name {
+  min-width: 100px;
+  font-weight: 500;
+  color: #333;
+}
+
+.company-hours {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.company-hours .num {
+  min-width: 3.5rem; /* ให้ตัวเลขเท่ากัน */
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  display: inline-block;
+}
+
+.company-hours .unit {
+  white-space: nowrap;
+  margin-left: 1rem;
+}
+
 
 @media (max-width: 560px) {
-  .table-hover {
-    font-size: 0.85rem;
-  }
+.table-hover {
+font-size: 0.85rem;
+}
 
-  .date-wrapper {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-  }
+.date-wrapper {
+flex-direction: row;
+align-items: center;
+justify-content: space-between;
+width: 100%;
+}
 
-  .date-wrapper label,
-  .date-wrapper input {
-    width: auto;
-  }
+.date-wrapper label,
+.date-wrapper input {
+width: auto;
+}
 
-  .section h2 {
-    font-size: 1.25rem;
-  }
+.section h2 {
+font-size: 1.25rem;
+}
 
-  #attendence-log label[for="selectedDate"] {
-    margin-top: 0;
-  }
+#attendence-log label[for="selectedDate"] {
+margin-top: 0;
+}
 
-  #attendence-log label,
-  #attendence-log input[type="date"],
-  #attendence-log input[type="month"],
-  #attendence-log select {
-    display: inline-block;
-    width: auto;
-    vertical-align: middle;
-  }
+#attendence-log label,
+#attendence-log input[type="date"],
+#attendence-log input[type="month"],
+#attendence-log select {
+display: inline-block;
+width: auto;
+vertical-align: middle;
+}
 
-  #attendence-log .mb-3.d-flex {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+#attendence-log .mb-3.d-flex {
+flex-direction: column;
+align-items: flex-start;
+}
 
-  #attendence-log .select-wrapper,
-  #attendence-log .date-wrapper {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: nowrap;
-  }
+#attendence-log .select-wrapper,
+#attendence-log .date-wrapper {
+width: 100%;
+display: flex;
+align-items: center;
+gap: 0.5rem;
+flex-wrap: nowrap;
+}
 
-  .summary-filter-wrapper {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-    width: 100%;
-  }
+.summary-filter-wrapper {
+flex-direction: column;
+align-items: flex-start;
+gap: 0.5rem;
+width: 100%;
+}
 
-  .summary-filter-wrapper > div {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    width: 100%;
-    flex-wrap: nowrap;
-  }
+.summary-filter-wrapper > div {
+display: flex;
+align-items: center;
+gap: 0.5rem;
+width: 100%;
+flex-wrap: nowrap;
+}
 
-  .summary-filter-wrapper > div label,
-  .summary-filter-wrapper > div select,
-  .summary-filter-wrapper > div input[type="month"] {
-    width: auto;
-    max-width: 180px;
-  }
+.summary-filter-wrapper > div label,
+.summary-filter-wrapper > div select,
+.summary-filter-wrapper > div input[type="month"] {
+width: auto;
+max-width: 180px;
+}
 
 }
 
-/* สำหรับ desktop */
 @media (min-width: 561px) {
-  #attendence-log .mb-3.d-flex {
-    flex-wrap: nowrap;
-    flex-direction: row;
-    align-items: center;
-    gap: 1rem;
-  }
+#attendence-log .mb-3.d-flex {
+flex-wrap: nowrap;
+flex-direction: row;
+align-items: center;
+gap: 1rem;
+}
 
-  #attendence-log .select-wrapper,
-  #attendence-log .date-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    white-space: nowrap;
-  }
+#attendence-log .select-wrapper,
+#attendence-log .date-wrapper {
+display: flex;
+align-items: center;
+gap: 0.5rem;
+white-space: nowrap;
+}
 
-  #attendence-log label {
-    margin-bottom: 0;
-  }
+#attendence-log label {
+margin-bottom: 0;
+}
 
-  .summary-filter-wrapper {
-    flex-direction: row;
-    align-items: center;
-    gap: 0.75rem;
-    width: 100%;
-  }
+.summary-filter-wrapper {
+flex-direction: row;
+align-items: center;
+gap: 0.75rem;
+width: 100%;
+}
 
-  .summary-filter-wrapper label,
-  .summary-filter-wrapper select,
-  .summary-filter-wrapper input[type="month"] {
-    width: auto;
-    max-width: 250px;
-  }
+.summary-filter-wrapper label,
+.summary-filter-wrapper select,
+.summary-filter-wrapper input[type="month"] {
+width: auto;
+max-width: 250px;
+}
 
-  .summary-filter-wrapper > div {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: nowrap;
-  }
+.summary-filter-wrapper > div {
+display: flex;
+align-items: center;
+gap: 0.5rem;
+flex-wrap: nowrap;
+}
 }

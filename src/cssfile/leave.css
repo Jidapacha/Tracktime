@@ -121,6 +121,9 @@ h2, h4 {
   font-weight: 600;
   color: #343a40;
 }
+.table.leave-summary td:nth-child(1){
+  text-align: left;
+}
 
 .table.leave-summary td:nth-child(2),
 .table.leave-summary td:nth-child(3) {

@@ -4,6 +4,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import * as bootstrap from 'bootstrap';
 import { supabase, supabaseAdmin } from '../supabaseClient';
 import NavbarPage from './NavbarPage';
+import '../cssfile/admin.css'
 
 function AdminPage() {
 
@@ -20,8 +21,7 @@ function AdminPage() {
     const [showOtherBank, setShowOtherBank] = useState(false);
     const [editFormData, setEditFormData] = useState({});
     const [employeeToDelete, setEmployeeToDelete] = useState(null);
-
-
+    const [showAllEmployees, setShowAllEmployees] = useState(true);
 
     const toggleAddForm = () => {
         setShowAddForm(prev => {
@@ -120,14 +120,41 @@ function AdminPage() {
     }, []);
 
     const filteredEmployees = employees.filter(emp => {
-        const searchQueryLower = searchQuery.toLowerCase();
-        return (
-          (emp.name && emp.name.toLowerCase().includes(searchQueryLower)) ||
-          (emp.username && emp.username.toLowerCase().includes(searchQueryLower))
-        );
-      });
+      const searchQueryLower = searchQuery.toLowerCase();
+      return (
+        (emp.name && emp.name.toLowerCase().includes(searchQueryLower)) ||
+        (emp.username && emp.username.toLowerCase().includes(searchQueryLower))
+      );
+    });
+
     
+    const displayedEmployees = editingEmployee
+    ? filteredEmployees.filter(emp => emp.employee_id === editingEmployee.employee_id)
+    : searchQuery
+      ? filteredEmployees
+      : showAllEmployees
+        ? filteredEmployees
+        : filteredEmployees.slice(0, 5);
+
+
+
       
+    const handleEditClick = (emp) => {
+      setEditingEmployee(emp);
+      setShowAllEmployees(false);
+      setEditFormData({
+        name: emp.name || '',
+        username: emp.username || '',
+        email: emp.email || '',
+        tel: emp.tel || '',
+        role: emp.role || '',
+        bank: emp.bank || '',
+        bank_number: emp.bank_number || '',
+      });
+    };
+      
+  
+
       useEffect(() => {
         if (editingEmployee) {
           setEditFormData({ ...editingEmployee });  // Clone object ไม่ใช่ reference เดิม
@@ -202,7 +229,9 @@ function AdminPage() {
           }
         }
       };
+
       
+    
       
 
     const showSection = (id) => {
@@ -288,33 +317,64 @@ function AdminPage() {
 
                             {searchQuery && filteredEmployees.length > 0 && (
                                 <ul className="list-group mb-3">
-                                    {filteredEmployees.map(emp => (
-                                        <li key={emp.employee_id} className="list-group-item d-flex justify-content-between align-items-center">
-                                            <span>👤 {emp.username} : {emp.name}</span>
-                                            <div className="d-flex">
-                                            <button className="btn btn-sm btn-warning me-2" onClick={() => {
-                                                setEditingEmployee(emp);
-                                                setEditFormData({
-                                                  name: emp.name || '',
-                                                  username: emp.username || '',
-                                                  email: emp.email || '',
-                                                  tel: emp.tel || '',
-                                                  role: emp.role || '',
-                                                  bank: emp.bank || '',
-                                                  bank_number: emp.bank_number || '',
-                                                });
-                                              }}
-                                              
-                                            >
-                                            ✏️ แก้ไข
-                                            </button>
-                                            <button className="btn btn-sm btn-danger" onClick={() => setEmployeeToDelete(emp)}>🗑️ ลบ</button>
-                                            </div>
-                                        </li>
-                                        ))}
-
+                                  {displayedEmployees.map(emp => (
+                                    <li key={emp.employee_id} className="list-group-item d-flex justify-content-between align-items-center">
+                                      <span>👤 {emp.username} : {emp.name}</span>
+                                      <div>
+                                        <button className="btn btn-sm btn-warning me-2" onClick={() => handleEditClick(emp)}>✏️ แก้ไข</button>
+                                        <button className="btn btn-sm btn-danger" onClick={() => setEmployeeToDelete(emp)}>🗑️ ลบ</button>
+                                      </div>
+                                    </li>
+                                  ))}
                                 </ul>
+
                             )}
+                            {!showAllEmployees && (
+                              <button className="btn btn-secondary" onClick={() => {
+                                setShowAllEmployees(true);
+                                setEditingEmployee(null);
+                              }}>🔙 กลับไปดูรายชื่อทั้งหมด</button>
+                            )}
+
+                            {editingEmployee && (
+                              <form className="row g-2 mt-3" onSubmit={handleEditEmployee}>
+                                <div className="col-md-4">
+                                  <input type="text" className="form-control" placeholder="ชื่อจริง" value={editFormData.name} onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })} />
+                                </div>
+                                <div className="col-md-4">
+                                  <input type="text" className="form-control" placeholder="ชื่อเล่น" value={editFormData.username} onChange={(e) => setEditFormData({ ...editFormData, username: e.target.value })} />
+                                </div>
+                                <div className="col-md-4">
+                                  <input type="email" className="form-control" placeholder="อีเมล" value={editFormData.email} onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })} />
+                                </div>
+                                <div className="col-md-4">
+                                  <input type="text" className="form-control" placeholder="เบอร์โทร" value={editFormData.tel} onChange={(e) => setEditFormData({ ...editFormData, tel: e.target.value })} />
+                                </div>
+                                <div className="col-md-4">
+                                  <select className="form-select" value={editFormData.role} onChange={(e) => setEditFormData({ ...editFormData, role: e.target.value })}>
+                                    <option value="">เลือกตำแหน่ง</option>
+                                    <option value="Full-time">Full-time</option>
+                                    <option value="Part-time">Part-time</option>
+                                    <option value="Internship">Internship</option>
+                                  </select>
+                                </div>
+                                <div className="col-md-4">
+                                  <input type="text" className="form-control" placeholder="ธนาคาร" value={editFormData.bank} onChange={(e) => setEditFormData({ ...editFormData, bank: e.target.value })} />
+                                </div>
+                                <div className="col-md-4">
+                                  <input type="text" className="form-control" placeholder="เลขบัญชี" value={editFormData.bank_number} onChange={(e) => setEditFormData({ ...editFormData, bank_number: e.target.value })} />
+                                </div>
+                                <div className="col-12 text-center mt-3">
+                                  <button type="submit" className="btn btn-primary me-2">💾 บันทึกการแก้ไข</button>
+                                  <button type="button" className="btn btn-secondary" onClick={() => {
+                                    setEditingEmployee(null);
+                                    setShowAllEmployees(true);
+                                  }}>❌ ยกเลิก</button>
+                                </div>
+
+                              </form>
+                            )}
+
                             
                             
                             {employeeToDelete && (
@@ -380,7 +440,7 @@ function AdminPage() {
                         <div className="mb-4">
                             <h4>📦 QR Code สำหรับวันนี้</h4>
                             <button className="btn btn-outline-success me-2 mb-2" onClick={() => toggleQRCode("check-in")}>
-                                🔄 สร้าง QR สำหรับเข้าทำงาน
+                                🔄 สร้าง QR สำหรับเข้างาน
                             </button>
                             <button className="btn btn-outline-danger mb-2" onClick={() => toggleQRCode("check-out")}>
                                 🔄 สร้าง QR สำหรับออกงาน
