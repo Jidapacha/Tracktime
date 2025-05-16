@@ -12,6 +12,7 @@ import LeavePage from './components/LeavePage';
 import RequestPage from './components/RequestPage';
 import AttendancePage from './components/AttendancePage';
 import EditTimePage from './components/EditTimePage';
+import ProfilePage from './components/ProfilePage';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
         <Route path="/request" element={<RequestPage />} />
         <Route path="/attendance-log" element={<AttendancePage />} />
         <Route path="/edit-time" element={<EditTimePage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </Router>
   );

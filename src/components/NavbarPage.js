@@ -50,6 +50,14 @@ function NavbarPage() {
           <button className="navbar-toggler text-white" type="button" onClick={() => setMobileMenuOpen(true)}>
             <span style={{ fontSize: '1.5rem' }}>☰</span>
           </button>
+  
+          <img
+            src="https://img.icons8.com/pulsar-gradient/96/user-male-circle.png"
+            alt="profile"
+            onClick={() => navigate('/profile')}
+            style={{ width: '40px', height: '40px', cursor: 'pointer' }}
+          />
+  
         </div>
       </nav>
 
@@ -103,9 +111,22 @@ function NavbarPage() {
         <button className="btn btn-light logout-btn" onClick={handleLogout}>ออกจากระบบ</button>
       </div>
 
+
+      
       {/* Desktop Sidebar */}
-      <div id="sidebar" className="sidebar-custom d-none d-lg-block">
-        <h4 className="mb-4 fs-4">เมนู</h4>
+      <div id="sidebar" className="sidebar-custom d-none d-lg-block p-3">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <span className="fs-3 text-white mb-0">เมนู</span>
+          <img
+            src="https://img.icons8.com/pulsar-gradient/96/user-male-circle.png"
+            alt="profile"
+            onClick={() => navigate('/profile')}
+            style={{ width: '40px', height: '40px', cursor: 'pointer' }}
+          />
+        </div>
+
+
+
         <ul className="navbar-nav">
           <li className="nav-item">
             <button className="nav-link btn btn-link" onClick={() => navigate('/home')}>🏠 หน้าหลัก</button>

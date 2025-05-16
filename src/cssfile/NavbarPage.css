@@ -185,3 +185,19 @@ button:active {
     margin: 1rem auto 0 auto; /* ตรงกลาง */
   }
 }
+
+
+.sidebar-custom {
+  width: 250px;
+  background-color: #157347;
+  height: 100vh;
+}
+
+.sidebar-custom .btn-outline-light {
+  border-color: white;
+  color: white;
+}
+
+.sidebar-custom .btn-outline-light:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
