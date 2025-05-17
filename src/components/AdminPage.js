@@ -89,20 +89,20 @@ function AdminPage() {
             return;
         }
       
-        // 2. สร้าง user ใน Supabase Auth ด้วย email เดียวกัน
-        const { data: user, error: authError } = await supabaseAdmin.auth.admin.createUser({
-            email: email,
-            password: password,
-            email_confirm: true
+        const response = await fetch('/api/create-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
         });
-      
-        if (authError) {
-            alert("เพิ่มพนักงานสำเร็จ แต่สร้างผู้ใช้ใน Auth ไม่ได้: " + authError.message);
-            console.error(authError);
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          alert("เพิ่มพนักงานสำเร็จ แต่สร้างผู้ใช้ใน Auth ไม่ได้: " + result.error);
         } else {
-            alert("เพิ่มพนักงานสำเร็จและสร้างบัญชีผู้ใช้เรียบร้อยแล้ว 🎉");
-            e.target.reset();
+          alert("เพิ่มพนักงานสำเร็จและสร้างบัญชีผู้ใช้เรียบร้อยแล้ว 🎉");
         }
+
     };
 
     
