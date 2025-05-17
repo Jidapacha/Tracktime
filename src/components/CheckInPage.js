@@ -181,7 +181,7 @@ function CheckInPage() {
             <NavbarPage showSection={showSection}/>
             <div className="main-content">
                 <div id="checkin" className="section">
-                    <h2>🟢 เช็คชื่อเข้า</h2> 
+                    <h1 className="fw-bold"><i class="fa-solid fa-right-to-bracket"></i> เช็คชื่อเข้า</h1><hr />
                     <p>กรุณาสแกน QR Code ที่ได้รับจากแอดมินเพื่อเช็คชื่อเข้า</p>
 
                     <div className="mb-3">

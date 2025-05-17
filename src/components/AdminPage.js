@@ -243,24 +243,24 @@ function AdminPage() {
 
     return (
         <div>
-            <NavbarPage showSection={showSection} />
-            <div className="main-content">
-                    <div id="admin" className="section">
-                        <h2>🛠️ การจัดการพนักงาน</h2><hr />
-                        <div className="mb-4">
-                            <h4>👥 จัดการพนักงาน</h4>
-                            <button className="btn btn-outline-primary me-2 mb-2" onClick={toggleAddForm}>➕ เพิ่มพนักงาน</button>
-                            <button className="btn btn-outline-warning me-2 mb-2" onClick={toggleSearchForm}>✏️ แก้ไขข้อมูล</button>
+          <NavbarPage showSection={showSection} />
+          <div className="main-content">
+            <div id="admin" className="section">
+              <h1 className="fw-bold"><i class="fa-solid fa-screwdriver-wrench"></i> จัดการระบบ</h1><hr />
+                <div className="mb-4">
+                  <h4>👥 จัดการพนักงาน</h4>
+                  <button className="btn btn-outline-primary me-2 mb-2" onClick={toggleAddForm}>➕ เพิ่มพนักงาน</button>
+                  <button className="btn btn-outline-warning me-2 mb-2" onClick={toggleSearchForm}>✏️ แก้ไขข้อมูล</button>
                             
-                            {showAddForm && (
-                                <form id="add-employee-form" className="row g-2 mb-3" onSubmit={handleAddEmployee}>
-                                    <div className="col-md-4">
-                                        <input type="text" className="form-control" id="name" placeholder="ชื่อจริง" required />
-                                    </div>
-                                    <div className="col-md-4">
-                                        <input type="text" className="form-control" id="username" placeholder="ชื่อเล่น" required />
-                                    </div>
-                                    <div className="col-md-4">
+                  {showAddForm && (
+                    <form id="add-employee-form" className="row g-2 mb-3" onSubmit={handleAddEmployee}>
+                      <div className="col-md-4">
+                        <input type="text" className="form-control" id="name" placeholder="ชื่อจริง" required />
+                      </div>
+                      <div className="col-md-4">
+                        <input type="text" className="form-control" id="username" placeholder="ชื่อเล่น" required />
+                      </div>
+                      <div className="col-md-4">
                                         <input type="email" className="form-control" id="email" placeholder="อีเมล" required />
                                     </div>
                                     <div className="col-md-4">

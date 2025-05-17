@@ -52,7 +52,8 @@ const HomePage = () => {
         <NavbarPage showSection={showSection}/>  
         <div className="main-content">
           <div id="home" className="section active">
-            <h2>🏠 หน้าหลัก</h2>
+            <h1 className="fw-bold"><i class="fa-solid fa-house"></i> หน้าหลัก</h1>
+            <hr />
             <div id="employee">
               {employee ? (
                 <div>

@@ -134,8 +134,8 @@ function LeavePage() {
       <NavbarPage showSection={showSection} />
       <div className="main-content">
         <div id="leave" className="section">
-            <h2>📄 บันทึกการลา</h2>
-            <hr />
+            <h1 className="fw-bold"><i class="fa-solid fa-file-lines"></i> เพิ่มบันทึกการลา</h1><hr />
+            
             {step === 'summary' && (
             <>
               <div className="d-flex justify-content-between align-items-center mb-3">

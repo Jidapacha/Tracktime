@@ -225,8 +225,8 @@ function RequestPage() {
     <div>
       <NavbarPage showSection={showSection} />
       <div className="main-content">
-          <div id="request" className="section">
-            <h2>⏳ รายการรออนุมัติ</h2>
+        <div id="request" className="section">
+          <h1 className="fw-bold"><i class="fa-solid fa-hourglass-start"></i> รายการรออนุมัติ</h1><hr />
             
             <hr className="my-4" />
             <h2>🕒 คำขอแก้ไขเวลาทำงาน</h2>

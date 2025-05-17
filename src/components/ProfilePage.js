@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import NavbarPage from './NavbarPage';
+import { v4 as uuidv4 } from 'uuid';
 
 function ProfilePage() {
     const [profile, setProfile] = useState(null);
@@ -13,6 +14,10 @@ function ProfilePage() {
     const [passwordChanged, setPasswordChanged] = useState(false);
     const [passwordError, setPasswordError] = useState('');
     const [oldPassword, setOldPassword] = useState('');
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [showFileInput, setShowFileInput] = useState(false);
+
+
 
 
     useEffect(() => {
@@ -121,7 +126,58 @@ function ProfilePage() {
 
     };
 
+    const handleUploadButtonClick = async () => {
+    if (!selectedFile) {
+        setErrorMsg('กรุณาเลือกรูปก่อน');
+        return;
+    }
 
+    const extension = selectedFile.name.split('.').pop(); // ดึงนามสกุล
+    const filePath = `employee_photos/${profile.id}.${extension}`; // ใช้ชื่อเดิมเสมอ
+
+    const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, selectedFile, {
+            contentType: selectedFile.type,
+            upsert: true, // ✅ อัปโหลดทับได้
+        });
+
+    if (uploadError) {
+        console.error('❌ Upload error:', uploadError);
+        setErrorMsg('อัปโหลดรูปภาพล้มเหลว: ' + uploadError.message);
+        return;
+    }
+
+    const { data: urlData, error: urlError } = supabase
+        .storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+    const publicUrl = urlData?.publicUrl;
+
+    if (!publicUrl || urlError) {
+        setErrorMsg('ดึง public URL ไม่สำเร็จ');
+        return;
+    }
+
+    const { error: dbError } = await supabase
+        .from('employees')
+        .update({ profile_url: publicUrl })
+        .eq('email', profile.email);
+
+    if (dbError) {
+        setErrorMsg('บันทึกรูปภาพไม่สำเร็จ');
+    } else {
+        setProfile({ ...profile, profile_url: publicUrl });
+        setSuccessMsg('✅ อัปโหลดและอัปเดตรูปโปรไฟล์เรียบร้อยแล้ว');
+        setSelectedFile(null);
+    }
+};
+
+
+
+
+    
 
     const showSection = (id) => {
         const sections = document.querySelectorAll('.section');
@@ -136,7 +192,7 @@ function ProfilePage() {
             <NavbarPage showSection={showSection} />
             <div className="main-content">
                 <div id="profile" className="section">
-                    <h2>👤 ข้อมูลพนักงาน</h2>
+                    <h1 className="fw-bold"><i class="fa-solid fa-id-card"></i> ข้อมูลพนักงาน</h1><hr />
 
                     {loading ? (
                         <p>กำลังโหลดข้อมูล...</p>
@@ -144,16 +200,25 @@ function ProfilePage() {
                         <div className="row">
                             {/* คอลัมน์ซ้าย: รูปโปรไฟล์ */}
                             <div className="col-md-4 text-center">
-                                <img
-                                src="https://img.icons8.com/pulsar-gradient/96/user-male-circle.png" // หรือ path รูปจริง
-                                alt="profile"
+                            {profile.profile_url && profile.profile_url !== 'null' ? (
+                            <img
+                                src={profile.profile_url}
+                                alt="รูปโปรไฟล์"
                                 className="img-fluid rounded-circle mb-3"
                                 style={{ width: '150px', height: '150px', objectFit: 'cover' }}
-                                />
-                                <p className="fw-bold">{profile.name}</p>
-                                <p className="text-muted">{profile.role}</p>
+                            />
+                            ) : (
+                            <i className="fa-regular fa-circle-user fa-10x mb-4"></i>
+                            )}
 
-                            </div>
+                            <p className="fw-bold mb-2">{profile.name}</p>
+                            <p className="text-muted mb-2">{profile.role}</p>
+                            
+
+
+                        </div>
+
+
 
                             {/* คอลัมน์ขวา: รายละเอียด + แก้ไข + เปลี่ยนรหัสผ่าน */}
                             <div className="col-md-8">
@@ -165,8 +230,14 @@ function ProfilePage() {
                                     <p><strong>ธนาคาร:</strong> {profile.bank}</p>
                                     <p><strong>เลขบัญชี:</strong> {profile.bank_number}</p>
 
-                                    <button className="btn btn-secondary  me-2" onClick={() => setIsEditing(true)}>
-                                    ✏️ แก้ไขข้อมูล
+                                    <button
+                                        className="btn btn-secondary me-2"
+                                        onClick={() => {
+                                            setIsEditing(true);
+                                            setShowFileInput(false); 
+                                        }}
+                                        >
+                                        ✏️ แก้ไขข้อมูล
                                     </button>
                                 </>
                                 ) : (
@@ -196,9 +267,48 @@ function ProfilePage() {
                                 </>
                                 )}
 
+                                {!showFileInput && (
+                                    <button
+                                    className="btn btn-outline-primary mb-2"
+                                    onClick={() => setShowFileInput(true)}
+                                    >
+                                    📤 เพิ่มรูปภาพ
+                                    </button>
+                                )}
+
+                                {/* ฟอร์มอัปโหลด */}
+                                {showFileInput && (
+                                    <>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="form-control mb-2"
+                                        onChange={(e) => setSelectedFile(e.target.files[0])}
+                                    />
+                                    <div className="d-flex justify-content-center gap-2">
+                                        <button className="btn btn-primary" onClick={handleUploadButtonClick}>
+                                        📤 อัปโหลดรูป
+                                        </button>
+                                        <button
+                                        className="btn btn-outline-secondary"
+                                        onClick={() => setShowFileInput(false)}
+                                        >
+                                        ❌ ยกเลิก
+                                        </button>
+                                    </div>
+                                    </>
+                                )}
+                                </div>
+
 
                                 {!showPasswordForm ? (
-                                <button className="btn btn-outline-warning me-2" onClick={() => setShowPasswordForm(true)}>
+                                <button
+                                    className="btn btn-outline-warning me-2"
+                                    onClick={() => {
+                                        setShowPasswordForm(true);
+                                        setShowFileInput(false); 
+                                    }}
+                                    >
                                     🔒 เปลี่ยนรหัสผ่าน
                                 </button>
                                 ) : (
@@ -211,15 +321,17 @@ function ProfilePage() {
                                     <input type="password" className="form-control mb-2" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
 
                                     <button className="btn btn-warning me-2" onClick={handlePasswordChange}>บันทึกรหัสผ่านใหม่</button>
-                                    <button className="btn btn-outline-secondary" onClick={() => setShowPasswordForm(false)}>❌ ยกเลิก</button>
+                                    <button className="btn btn-outline-secondary  me-2" onClick={() => setShowPasswordForm(false)}>❌ ยกเลิก</button>
 
                                     {passwordChanged && <div className="alert alert-success mt-2">เปลี่ยนรหัสผ่านเรียบร้อยแล้ว</div>}
                                     {passwordError && <div className="alert alert-danger mt-2">{passwordError}</div>}
                                 </>
                                 )}
-                            </div>
 
-                        </div>
+                               
+                                </div>
+
+                       
                         ) : (
                         <div className="alert alert-danger">ไม่พบข้อมูลผู้ใช้</div>
                         )}

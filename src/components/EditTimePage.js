@@ -76,11 +76,6 @@ const EditTimePage = () => {
   }
 };
 
-
-
-
-
-
     const showSection = (id) => {
         const sections = document.querySelectorAll('.section');
         sections.forEach(section => section.classList.remove('active'));
@@ -93,7 +88,7 @@ const EditTimePage = () => {
         <NavbarPage showSection={showSection}/>  
         <div className="main-content">
           <div id="edittime" className="section">
-            <h2>🕒 แก้ไขเวลางาน</h2>
+            <h1 className="fw-bold"><i class="fa-solid fa-clock"></i> แก้ไขเวลางาน</h1><hr />
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                     <label>ประเภทเวลา:</label>

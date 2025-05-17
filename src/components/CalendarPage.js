@@ -223,7 +223,7 @@ function CalendarPage() {
       <NavbarPage showSection={showSection} />
       <div className="main-content">
           <div id="calendar-page" className="section">
-            <h2>📅 ปฏิทินกิจกรรม</h2>
+            <h1 className="fw-bold"><i class="fa-solid fa-calendar-days"></i> ปฏิทินกิจกรรม</h1><hr />
             <div id="calendar"></div>
             <div id="calendar-details" className="mt-3 p-2 border rounded bg-light"></div>
           </div>

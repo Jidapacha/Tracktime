@@ -5,10 +5,10 @@
 
 
 .navbar-custom {
-  background-color: #157347 !important;
+  background-color: rgb(11, 11, 167) !important;
   color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border-bottom: 2px solid #106b3f;
+  border-bottom: 2px solid rgb(14, 14, 125);
 }
 
 .navbar-custom .nav-link,
@@ -50,9 +50,8 @@
 
 
 .sidebar-custom {
-  background-color: #157347;
   color: white;
-  min-width: 250px;
+  min-width: 20px;
   height: 100vh;
   position: fixed;
   top: 0;
@@ -110,7 +109,7 @@
   left: -250px;
   width: 250px;
   height: 100vh;
-  background-color: #157347f7;
+  background-color: rgba(11, 11, 167, 0.895);
   color: white;
   padding: 1rem;
   transition: left 0.3s ease-in-out;
@@ -189,7 +188,7 @@ button:active {
 
 .sidebar-custom {
   width: 250px;
-  background-color: #157347;
+  background-color: rgb(11, 11, 167);
   height: 100vh;
 }
 
@@ -200,4 +199,8 @@ button:active {
 
 .sidebar-custom .btn-outline-light:hover {
   background-color: rgba(255, 255, 255, 0.15);
+}
+
+.logout-btn {
+  color: rgb(11, 11, 167) !important;
 }

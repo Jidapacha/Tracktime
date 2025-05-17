@@ -126,7 +126,7 @@ function AttendancePage() {
             <NavbarPage showSection={showSection} />
             <div className="main-content">
                 <div id="attendence-log" className="section">
-                    <h2>📜 ประวัติทำงานของพนักงาน</h2>
+                    <h1 className="fw-bold"><i class="fa-solid fa-chart-simple"></i> ประวัติการทำงาน</h1><hr />
 
                     <div className="mb-3 d-flex align-items-center gap-2 flex-wrap">
                         <div className="select-wrapper">
