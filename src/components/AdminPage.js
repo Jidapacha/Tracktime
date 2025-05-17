@@ -95,24 +95,14 @@ function AdminPage() {
           body: JSON.stringify({ email, password }),
         });
 
-        const text = await response.text(); // ดึง raw text ก่อน
-        console.log("🧾 Raw response text:", text);
 
-        let result;
-        try {
-          result = JSON.parse(text);
-        } catch (e) {
-          console.error("❌ JSON parse error:", e);
-          return alert("เกิดข้อผิดพลาดจากเซิร์ฟเวอร์ (ไม่สามารถแปลงข้อมูล JSON ได้)");
-        }
+        const result = await response.json();
 
         if (!response.ok) {
           alert("เพิ่มพนักงานสำเร็จ แต่สร้างผู้ใช้ใน Auth ไม่ได้: " + result.error);
         } else {
           alert("เพิ่มพนักงานสำเร็จและสร้างบัญชีผู้ใช้เรียบร้อยแล้ว 🎉");
-          e.target.reset(); // ✅ รีเซ็ตฟอร์ม
         }
-
 
     };
 
