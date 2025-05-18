@@ -92,13 +92,12 @@ function AdminPage() {
         const { error: authError } = await supabase.auth.signUp({
           email,
           password,
-          email_confirm: true
         });
 
         if (authError) {
           alert("เพิ่มพนักงานสำเร็จ แต่สร้างบัญชีผู้ใช้ไม่สำเร็จ: " + authError.message);
         } else {
-          alert("✅ เพิ่มพนักงานและบัญชีผู้ใช้เรียบร้อยแล้ว");
+          alert("✅ เพิ่มพนักงานเรียบร้อยแล้ว\nกรุณากด Comfirm your email ที่ส่งไปยังอีเมลของคุณก่อนเข้าสู่ระบบ");
         }
         e.target.reset();
         await fetchEmployees();

@@ -36,15 +36,52 @@ function CalendarPage() {
   }
 
   useEffect(() => {
+    
     const loadCalendar = async () => {
       const calendarEl = document.getElementById('calendar');
       if (!calendarEl) return;
 
+      const {
+        data: { user },
+        error: userError
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        console.error("ไม่พบผู้ใช้ที่ล็อกอิน");
+        return;
+      }
+
+      const { data: empData, error: empError } = await supabase
+        .from('employees')
+        .select('employee_id')
+        .eq('email', user.email)
+        .single();
+
+      if (empError || !empData) {
+        console.error("ไม่พบ employee_id ที่ตรงกับ email นี้");
+        return;
+      }
+
+      const employeeId = empData.employee_id;
+
+
+      // ✅ ดึงข้อมูลของพนักงานคนนั้น
       const [leaveRes, holidayRes, attendanceRes] = await Promise.all([
-        supabase.from('leave_days').select('start_date, end_date, start_time, end_time, leave_type'),
-        supabase.from('holidays').select('date, title'),
-        supabase.from('attendance_log').select('timestamp, check_type'),
+        supabase
+          .from('leave_days')
+          .select('start_date, end_date, start_time, end_time, leave_type')
+          .eq('employee_id', employeeId), // ✅ กรองตาม employee_id
+
+        supabase
+          .from('holidays')
+          .select('date, title'), // ✅ ทุกคนใช้ร่วมกัน
+
+        supabase
+          .from('attendance_log')
+          .select('timestamp, check_type')
+          .eq('employee_id', employeeId), // ✅ เฉพาะคนนี้
       ]);
+
 
       if (leaveRes.error || holidayRes.error || attendanceRes.error) {
         console.error('Error loading data', leaveRes.error, holidayRes.error, attendanceRes.error);
@@ -207,6 +244,7 @@ function CalendarPage() {
       `;
 
     };
+    
 
     loadCalendar();
   }, []);
