@@ -92,6 +92,7 @@ function AdminPage() {
         const { error: authError } = await supabase.auth.signUp({
           email,
           password,
+          email_confirm: true
         });
 
         if (authError) {
