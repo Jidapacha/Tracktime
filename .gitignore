@@ -25,3 +25,17 @@ yarn-error.log*
 
 .env.local
 .env.production
+
+# Firebase Functions
+functions/node_modules/
+functions/lib/
+
+# IDE
+.vscode/
+
+
+# Node.js
+node_modules/
+dist/
+build/
+*.map

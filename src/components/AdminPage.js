@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import * as bootstrap from 'bootstrap';
-import { supabase, supabaseAdmin } from '../supabaseClient';
+import { supabase } from '../supabaseClient';
 import NavbarPage from './NavbarPage';
 import '../cssfile/admin.css'
 
@@ -89,19 +89,21 @@ function AdminPage() {
             return;
         }
       
-        const response = await fetch('/api/create-user', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const response = await fetch("http://localhost:3001/api/create-user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
         });
 
-
         const result = await response.json();
 
-        if (!response.ok) {
-          alert("เพิ่มพนักงานสำเร็จ แต่สร้างผู้ใช้ใน Auth ไม่ได้: " + result.error);
-        } else {
+        if (response.ok) {
           alert("เพิ่มพนักงานสำเร็จและสร้างบัญชีผู้ใช้เรียบร้อยแล้ว 🎉");
+          e.target.reset();
+          await fetchEmployees();
+        } else {
+          alert("เพิ่มพนักงานสำเร็จ แต่สร้างผู้ใช้ใน Auth ไม่ได้: " + result.error);
+          
         }
 
     };
