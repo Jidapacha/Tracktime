@@ -89,23 +89,18 @@ function AdminPage() {
             return;
         }
       
-        const response = await fetch("http://localhost:3001/api/create-user", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
+        const { error: authError } = await supabase.auth.signUp({
+          email,
+          password,
         });
 
-        const result = await response.json();
-
-        if (response.ok) {
-          alert("เพิ่มพนักงานสำเร็จและสร้างบัญชีผู้ใช้เรียบร้อยแล้ว 🎉");
-          e.target.reset();
-          await fetchEmployees();
+        if (authError) {
+          alert("เพิ่มพนักงานสำเร็จ แต่สร้างบัญชีผู้ใช้ไม่สำเร็จ: " + authError.message);
         } else {
-          alert("เพิ่มพนักงานสำเร็จ แต่สร้างผู้ใช้ใน Auth ไม่ได้: " + result.error);
-          
+          alert("✅ เพิ่มพนักงานและบัญชีผู้ใช้เรียบร้อยแล้ว");
         }
-
+        e.target.reset();
+        await fetchEmployees();
     };
 
     
