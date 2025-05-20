@@ -79,8 +79,6 @@ function RequestPage() {
     other: 'อื่นๆ'
   };
 
-
-
   const fetchTimeRequests = async () => {
     const { data, error } = await supabase
       .from('time_correction_requests')
@@ -133,7 +131,6 @@ function RequestPage() {
     }
   };
 
-
   const handleRejectTime = async (requestId) => {
     const { error } = await supabase
       .from('time_correction_requests')
@@ -146,7 +143,6 @@ function RequestPage() {
       fetchTimeRequests();
     }
   };
-
 
 
   const fetchHistory = async () => {
@@ -165,32 +161,32 @@ function RequestPage() {
     `)
        .in('status', ['approved', 'rejected']);
 
-  if (leaveError) {
-    console.error('❌ โหลดประวัติลางานไม่สำเร็จ:', leaveError);
-    return;
-  }
-  const { data: timeData, error: timeError } = await supabase
-    .from('time_correction_requests')
-    .select(`
-      request_time_id,
-      time,
-      type,
-      reason,
-      status,
-      company,
-      employee:employee_id (
-        name
-      )
-    `)
-    .in('status', ['approved', 'rejected']);
+    if (leaveError) {
+      console.error('❌ โหลดประวัติลางานไม่สำเร็จ:', leaveError);
+      return;
+    }
+    const { data: timeData, error: timeError } = await supabase
+      .from('time_correction_requests')
+      .select(`
+        request_time_id,
+        time,
+        type,
+        reason,
+        status,
+        company,
+        employee:employee_id (
+          name
+        )
+      `)
+      .in('status', ['approved', 'rejected']);
 
-  if (timeError) {
-    console.error('❌ โหลดประวัติแก้เวลาไม่สำเร็จ:', timeError);
-    return;
-  }
-  const formattedLeave = leaveData.map(item => ({
-    type: 'leave',
-    ...item,
+    if (timeError) {
+      console.error('❌ โหลดประวัติแก้เวลาไม่สำเร็จ:', timeError);
+      return;
+    }
+    const formattedLeave = leaveData.map(item => ({
+      type: 'leave',
+      ...item,
   }));
 
   const formattedTime = timeData.map(item => ({
@@ -199,14 +195,12 @@ function RequestPage() {
   }));
 
   setHistory(
-  [...formattedLeave, ...formattedTime].sort((a, b) => {
-    const aTime = a.type === 'leave' ? new Date(a.start_date) : new Date(a.time);
-    const bTime = b.type === 'leave' ? new Date(b.start_date) : new Date(b.time);
-    return bTime - aTime; // เรียงจากใหม่ → เก่า
-  })
-);
-
-};
+    [...formattedLeave, ...formattedTime].sort((a, b) => {
+      const aTime = a.type === 'leave' ? new Date(a.start_date) : new Date(a.time);
+      const bTime = b.type === 'leave' ? new Date(b.start_date) : new Date(b.time);
+      return bTime - aTime; // เรียงจากใหม่ → เก่า
+    }));
+  };
 
 
 
@@ -268,10 +262,7 @@ function RequestPage() {
                 </div>
               ))
             )}
-
-            
-
-
+        
             <hr className="my-4" />
             <h3><i className="fas fa-history"></i> ประวัติการอนุมัติ/ปฏิเสธ</h3>
 

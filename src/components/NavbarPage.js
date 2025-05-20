@@ -20,6 +20,9 @@ function NavbarPage() {
   useEffect(() => {
     const checkAdminMenu = async () => {
       const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user || !user.email) return;
+
       const { data: emp } = await supabase
         .from("employees")
         .select("special_role")

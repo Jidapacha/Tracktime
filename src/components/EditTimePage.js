@@ -16,19 +16,11 @@ const EditTimePage = () => {
 
 
     const convertLocalTimeToUTC = (localDateTimeStr) => {
-    // localDateTimeStr = "2025-05-15T16:00"
     const local = new Date(localDateTimeStr);
-
-    // สร้าง Date ใหม่ด้วย TimeZone "Asia/Bangkok"
     const tzDate = new Date(local.toLocaleString("en-US", { timeZone: "Asia/Bangkok" }));
-
-    // คำนวณ offset ระหว่างเวลานั้นในไทยกับ UTC
     const offset = tzDate.getTime() - local.getTime();
-
-    // หัก offset ออกให้กลายเป็น UTC แท้
     const utcDate = new Date(local.getTime() - offset);
-
-    return utcDate.toISOString(); // ส่งค่าแบบ UTC มาตรฐาน
+    return utcDate.toISOString(); 
     };
 
     const handleSubmit = async (e) => {

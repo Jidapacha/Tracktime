@@ -25,7 +25,6 @@ const LoginPage = () => {
 
     const userEmail = authData.user.email;
 
-    // ดึงข้อมูลจาก employees table
     const { data: employee, error: fetchError } = await supabase
       .from('employees')
       .select('*')
@@ -37,9 +36,6 @@ const LoginPage = () => {
       return;
     }
 
-    console.log("✅ ข้อมูลพนักงาน:", employee);
-
-    // เปลี่ยนหน้าไปยัง /home
     navigate('/home');
   };
 

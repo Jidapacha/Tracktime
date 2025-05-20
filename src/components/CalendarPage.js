@@ -213,9 +213,11 @@ function CalendarPage() {
             mondayHoliday: 'วันหยุดประจำบริษัท',
           };
 
-          const readable = types.length > 0
-            ? types.map(type => descriptionMap[type] || type).join(', ')
-            : 'ไม่มีข้อมูล';
+          const readable = types
+            .filter(type => type !== 'complete') 
+            .map(type => descriptionMap[type] || type)
+            .join(', ') || 'ไม่มีข้อมูล';
+
 
           const holiday = holidayRes.data.find(h => h.date === clickedDate);
           const holidayTitle = holiday ? holiday.title : null;

@@ -100,7 +100,7 @@ function AttendancePage() {
                 const duration = outTime - inTime;
                 totalMs += duration;
                 companyTotals[company] = (companyTotals[company] || 0) + duration;
-                i++; // ข้าม log ถัดไปที่จับคู่แล้ว
+                i++; 
             }
         }
     });

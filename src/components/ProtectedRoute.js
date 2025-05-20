@@ -16,10 +16,9 @@ const ProtectedRoute = () => {
         return;
       }
 
-      // ดึงข้อมูลจากตาราง employees โดยใช้ user.email ที่ถูกต้อง
       const { data: employeeData, error: employeeError } = await supabase
         .from('employees')
-        .select('employee_id, name, username, email')  // ปรับชื่อ column ให้ตรงกับใน DB จริง
+        .select('employee_id, name, username, email')  
         .eq('email', user.email);
 
       if (employeeError) {

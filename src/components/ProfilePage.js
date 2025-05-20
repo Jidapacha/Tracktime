@@ -17,9 +17,6 @@ function ProfilePage() {
     const [selectedFile, setSelectedFile] = useState(null);
     const [showFileInput, setShowFileInput] = useState(false);
 
-
-
-
     useEffect(() => {
         const fetchProfile = async () => {
         const { data: { user } } = await supabase.auth.getUser();
@@ -67,9 +64,6 @@ function ProfilePage() {
         }
     };
 
-    
-
-
     const handlePasswordChange = async () => {
         setPasswordChanged(false);
         setPasswordError('');
@@ -81,7 +75,6 @@ function ProfilePage() {
 
         const { data: { user } } = await supabase.auth.getUser();
 
-        // ✅ 1. ยืนยันรหัสผ่านเดิม
         const { error: authError } = await supabase.auth.signInWithPassword({
             email: user.email,
             password: oldPassword
@@ -92,7 +85,6 @@ function ProfilePage() {
             return;
         }
 
-        // ✅ 2. อัปเดตใน Auth
         const { error: updateError } = await supabase.auth.updateUser({
             password: newPassword
         });
@@ -102,7 +94,6 @@ function ProfilePage() {
             return;
         }
 
-        // ✅ 3. อัปเดตลงในตาราง employees
         const { error: dbError } = await supabase
             .from('employees')
             .update({ password: newPassword })
@@ -127,57 +118,52 @@ function ProfilePage() {
     };
 
     const handleUploadButtonClick = async () => {
-    if (!selectedFile) {
-        setErrorMsg('กรุณาเลือกรูปก่อน');
-        return;
-    }
+        if (!selectedFile) {
+            setErrorMsg('กรุณาเลือกรูปก่อน');
+            return;
+        }
 
-    const extension = selectedFile.name.split('.').pop(); // ดึงนามสกุล
-    const filePath = `employee_photos/${profile.id}.${extension}`; // ใช้ชื่อเดิมเสมอ
+        const extension = selectedFile.name.split('.').pop(); 
+        const filePath = `employee_photos/${profile.id}.${extension}`; 
 
-    const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, selectedFile, {
-            contentType: selectedFile.type,
-            upsert: true, // ✅ อัปโหลดทับได้
-        });
+        const { error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(filePath, selectedFile, {
+                contentType: selectedFile.type,
+                upsert: true, 
+            });
 
-    if (uploadError) {
-        console.error('❌ Upload error:', uploadError);
-        setErrorMsg('อัปโหลดรูปภาพล้มเหลว: ' + uploadError.message);
-        return;
-    }
+        if (uploadError) {
+            console.error('❌ Upload error:', uploadError);
+            setErrorMsg('อัปโหลดรูปภาพล้มเหลว: ' + uploadError.message);
+            return;
+        }
 
-    const { data: urlData, error: urlError } = supabase
-        .storage
-        .from('avatars')
-        .getPublicUrl(filePath);
+        const { data: urlData, error: urlError } = supabase
+            .storage
+            .from('avatars')
+            .getPublicUrl(filePath);
 
-    const publicUrl = urlData?.publicUrl;
+        const publicUrl = urlData?.publicUrl;
 
-    if (!publicUrl || urlError) {
-        setErrorMsg('ดึง public URL ไม่สำเร็จ');
-        return;
-    }
+        if (!publicUrl || urlError) {
+            setErrorMsg('ดึง public URL ไม่สำเร็จ');
+            return;
+        }
 
-    const { error: dbError } = await supabase
-        .from('employees')
-        .update({ profile_url: publicUrl })
-        .eq('email', profile.email);
+        const { error: dbError } = await supabase
+            .from('employees')
+            .update({ profile_url: publicUrl })
+            .eq('email', profile.email);
 
-    if (dbError) {
-        setErrorMsg('บันทึกรูปภาพไม่สำเร็จ');
-    } else {
-        setProfile({ ...profile, profile_url: publicUrl });
-        setSuccessMsg('✅ อัปโหลดและอัปเดตรูปโปรไฟล์เรียบร้อยแล้ว');
-        setSelectedFile(null);
-    }
-};
-
-
-
-
-    
+        if (dbError) {
+            setErrorMsg('บันทึกรูปภาพไม่สำเร็จ');
+        } else {
+            setProfile({ ...profile, profile_url: publicUrl });
+            setSuccessMsg('✅ อัปโหลดและอัปเดตรูปโปรไฟล์เรียบร้อยแล้ว');
+            setSelectedFile(null);
+        }
+    };
 
     const showSection = (id) => {
         const sections = document.querySelectorAll('.section');

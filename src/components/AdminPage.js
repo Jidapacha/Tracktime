@@ -29,7 +29,7 @@ function AdminPage() {
           if (next) {
             setSearchQuery('');
             setEditingEmployee(null);
-            setShowSearch(false);  // ปิดโหมดค้นหา
+            setShowSearch(false);  
           }
           return next;
         });
@@ -153,83 +153,109 @@ function AdminPage() {
       
   
 
-      useEffect(() => {
-        if (editingEmployee) {
-          setEditFormData({ ...editingEmployee });  // Clone object ไม่ใช่ reference เดิม
-        }
-      }, [editingEmployee]);
+    useEffect(() => {
+      if (editingEmployee) {
+        setEditFormData({ ...editingEmployee });  
+      }
+    }, [editingEmployee]);
       
-      const fetchEmployees = async () => {
-        const { data, error } = await supabase.from('employees').select('*');
+    const fetchEmployees = async () => {
+      const { data, error } = await supabase.from('employees').select('*');
+      if (error) {
+        setLogError('โหลดข้อมูลล้มเหลว');
+      } else {
+        setEmployees(data);
+      }
+    };
+      
+    const handleEditEmployee = async (e) => {
+      e.preventDefault();
+      
+      const updated = {};
+      
+      Object.entries(editFormData).forEach(([key, value]) => {
+        if (value !== undefined && value !== editingEmployee[key]) {
+          updated[key] = value;
+        }
+      });
+      
+      if (Object.keys(updated).length > 0) {
+        const { error } = await supabase
+          .from('employees')
+          .update(updated)
+          .eq('employee_id', editingEmployee.employee_id);
+      
         if (error) {
-          setLogError('โหลดข้อมูลล้มเหลว');
+          alert('อัปเดตไม่สำเร็จ: ' + error.message);
         } else {
-          setEmployees(data);
+          alert('✅ อัปเดตสำเร็จแล้ว');
+          setEditingEmployee(null);
+          setEditFormData({});
+          await fetchEmployees(); 
         }
-      };
-      
-      const handleEditEmployee = async (e) => {
-        e.preventDefault();
-      
-        const updated = {};
-      
-        // ✅ เปรียบเทียบข้อมูลที่เปลี่ยนจริง ๆ เท่านั้น
-        Object.entries(editFormData).forEach(([key, value]) => {
-          if (value !== undefined && value !== editingEmployee[key]) {
-            updated[key] = value;
-          }
-        });
-      
-        console.log('เปรียบเทียบข้อมูล:', editFormData, editingEmployee);
-        console.log('ข้อมูลที่เปลี่ยน:', updated);
-      
-        if (Object.keys(updated).length > 0) {
-          const { error } = await supabase
-            .from('employees')
-            .update(updated)
-            .eq('employee_id', editingEmployee.employee_id);
-      
-          if (error) {
-            alert('อัปเดตไม่สำเร็จ: ' + error.message);
-          } else {
-            alert('✅ อัปเดตสำเร็จแล้ว');
-            setEditingEmployee(null);
-            setEditFormData({});
-            await fetchEmployees(); // ✅ รอให้โหลดใหม่ก่อน
-          }
-        } else {
-          alert('ไม่มีข้อมูลที่เปลี่ยน');
-        }
-      };
-      
-      
-    
-    function toggleQRCode(type) {
-        const today = new Date().toISOString().split("T")[0];
-        const codeData = `qr-code-${type}-${today}`;
-        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${codeData}`;
-      
-        if (type === "check-in") {
-          if (showCheckInQR) {
-            setShowCheckInQR(false);  
-          } else {
-            setCheckInQRUrl(qrUrl);
-            setShowCheckInQR(true);
-            setShowCheckOutQR(false); 
-          }
-        } else if (type === "check-out") {
-          if (showCheckOutQR) {
-            setShowCheckOutQR(false);
-          } else {
-            setCheckOutQRUrl(qrUrl);
-            setShowCheckOutQR(true);
-            setShowCheckInQR(false); 
-          }
-        }
-      };
+      } else {
+        alert('ไม่มีข้อมูลที่เปลี่ยน');
+      }
+    };
+
+
+    const handleMakeAdmin = async (emp) => {
+      const confirm = window.confirm(`คุณแน่ใจหรือไม่ว่าต้องการเพิ่ม ${emp.name} (${emp.username}) เป็นแอดมิน?`);
+      if (!confirm) return;
+
+      const { error } = await supabase
+        .from("employees")
+        .update({ special_role: "admin" })
+        .eq("employee_id", emp.employee_id);
+
+      if (error) {
+        alert("❌ อัปเดตไม่สำเร็จ: " + error.message);
+      } else {
+        alert("✅ เพิ่มแอดมินสำเร็จ!");
+        fetchEmployees(); 
+      }
+    };
+
+    const handleRemoveAdmin = async (emp) => {
+      const { error } = await supabase
+        .from("employees")
+        .update({ special_role: null })
+        .eq("employee_id", emp.employee_id);
+
+      if (error) {
+        alert("❌ ลบสิทธิ์แอดมินไม่สำเร็จ: " + error.message);
+      } else {
+        alert("✅ ลบสิทธิ์แอดมินเรียบร้อยแล้ว");
+        await fetchEmployees();
+      }
+    };
+
 
       
     
+    function toggleQRCode(type) {
+      const today = new Date().toISOString().split("T")[0];
+      const codeData = `qr-code-${type}-${today}`;
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${codeData}`;
+      
+      if (type === "check-in") {
+        if (showCheckInQR) {
+          setShowCheckInQR(false);  
+        } else {
+          setCheckInQRUrl(qrUrl);
+          setShowCheckInQR(true);
+          setShowCheckOutQR(false); 
+        }
+      } else if (type === "check-out") {
+        if (showCheckOutQR) {
+          setShowCheckOutQR(false);
+        } else {
+          setCheckOutQRUrl(qrUrl);
+          setShowCheckOutQR(true);
+          setShowCheckInQR(false); 
+        }
+      }
+    };
       
 
     const showSection = (id) => {
@@ -320,7 +346,12 @@ function AdminPage() {
                                       <span>👤 {emp.username} : {emp.name}</span>
                                       <div>
                                         <button className="btn btn-sm btn-warning me-2" onClick={() => handleEditClick(emp)}>✏️ แก้ไข</button>
-                                        <button className="btn btn-sm btn-danger" onClick={() => setEmployeeToDelete(emp)}>🗑️ ลบ</button>
+                                        <button className="btn btn-sm btn-danger me-2" onClick={() => setEmployeeToDelete(emp)}>🗑️ ลบ</button>
+                                        {emp.special_role === 'admin' ? (
+                                          <button className="btn btn-sm btn-secondary me-2" onClick={() => handleRemoveAdmin(emp)}>❌ ลบแอดมิน</button>
+                                        ) : (
+                                          <button className="btn btn-sm btn-info me-2" onClick={() => handleMakeAdmin(emp)}>➕ แอดมิน</button>
+                                        )}
                                       </div>
                                     </li>
                                   ))}
@@ -374,6 +405,8 @@ function AdminPage() {
                             )}
 
                             
+
+                            
                             
                             {employeeToDelete && (
                                 <div
@@ -415,7 +448,7 @@ function AdminPage() {
                                             } else {
                                                 alert('✅ ลบพนักงานสำเร็จแล้ว');
                                                 setEmployeeToDelete(null);
-                                                fetchEmployees(); // รีโหลดข้อมูล
+                                                fetchEmployees(); 
                                             }
                                             }}
                                         >
@@ -431,7 +464,9 @@ function AdminPage() {
                                     </div>
                                     </div>
                                 </div>
-                                )}
+                            )}
+
+                            
 
                         </div>
 
