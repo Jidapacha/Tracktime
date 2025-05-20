@@ -55,10 +55,9 @@ function CheckOutPage() {
                     if (decodedText === todayCode) {
                         setHasScanned(true);
                         await qrScannerRef.current.stop();
-                        document.getElementById("qr-result-checkout").textContent = "✅ เช็คชื่อออกเรียบร้อย";
                         await saveCheckout();
                     } else {
-                        document.getElementById("qr-result-checkout").textContent = "❌ QR ไม่ถูกต้อง";
+                        alert("❌ QR ไม่ถูกต้อง");
                     }
                 },
                 (errorMessage) => {
@@ -72,6 +71,100 @@ function CheckOutPage() {
     }
 
     async function saveCheckout() {
+    const timestamp = new Date().toISOString();
+    const { data: userData } = await supabase.auth.getUser();
+    const email = userData?.user?.email;
+
+    const { data: empData, error: empErr } = await supabase
+        .from("employees")
+        .select("employee_id")
+        .eq("email", email)
+        .single();
+
+    if (empErr || !empData) {
+        alert("❌ ไม่พบรหัสพนักงาน");
+        return;
+    }
+
+    const employeeId = empData.employee_id;
+    const today = new Date();
+    const startOfDay = new Date(today);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(today);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const { data: checkins } = await supabase
+        .from("attendance_log")
+        .select("*")
+        .eq("employee_id", employeeId)
+        .eq("check_type", "check-in")
+        .eq("company", selectedCompany)
+        .gte("timestamp", startOfDay.toISOString())
+        .lte("timestamp", endOfDay.toISOString());
+
+    const { data: checkouts } = await supabase
+        .from("attendance_log")
+        .select("*")
+        .eq("employee_id", employeeId)
+        .eq("check_type", "check-out")
+        .eq("company", selectedCompany)
+        .gte("timestamp", startOfDay.toISOString())
+        .lte("timestamp", endOfDay.toISOString());
+
+    if ((checkins?.length || 0) <= (checkouts?.length || 0)) {
+        alert(`❌ ยังไม่มีการเช็คชื่อเข้าใหม่ของบริษัท ${selectedCompany}`);
+        return;
+    }
+
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+
+            const officeLat = 13.791099492729726;
+            const officeLon = 100.49673497164436;
+            const distance = getDistanceFromLatLonInMeters(latitude, longitude, officeLat, officeLon);
+            const locationLabel = distance <= 500
+                ? "office"
+                : `${latitude.toFixed(6)},${longitude.toFixed(6)}`;
+
+            const { error } = await supabase.from("attendance_log").insert([{
+                check_type: "check-out",
+                timestamp,
+                employee_id: employeeId,
+                location: locationLabel,
+                latitude: latitude.toString(),
+                longitude: longitude.toString(),
+                company: selectedCompany
+            }]);
+
+            if (error) {
+                alert("❌ บันทึกไม่สำเร็จ");
+            } else {
+                alert("✅ เช็คชื่อออกสำเร็จ!");
+            }
+        }, () => {
+            alert("❌ ไม่สามารถดึงตำแหน่งได้");
+        });
+    } else {
+        alert("❌ เบราว์เซอร์ไม่รองรับการดึงตำแหน่ง");
+    }
+}
+
+
+    async function stopScan() {
+        if (qrScannerRef.current) {
+            try {
+                await qrScannerRef.current.stop();
+                alert("❌ การสแกนถูกหยุด");
+            } catch (err) {
+                console.error("เกิดข้อผิดพลาดในการหยุดการสแกน:", err);
+            }
+        }
+    }
+
+    async function saveOnlineCheckout() {
         const timestamp = new Date().toISOString();
         const { data: userData } = await supabase.auth.getUser();
         const email = userData?.user?.email;
@@ -83,7 +176,7 @@ function CheckOutPage() {
             .single();
 
         if (empErr || !empData) {
-            document.getElementById("qr-result-checkout").innerHTML = "❌ ไม่พบรหัสพนักงาน";
+            alert("❌ ไม่พบรหัสพนักงาน");
             return;
         }
 
@@ -94,7 +187,7 @@ function CheckOutPage() {
         const endOfDay = new Date(today);
         endOfDay.setHours(23, 59, 59, 999);
 
-        const { data: checkLog, error: checkErr } = await supabase
+        const { data: checkLog } = await supabase
             .from("attendance_log")
             .select("*")
             .eq("employee_id", employeeId)
@@ -104,57 +197,53 @@ function CheckOutPage() {
             .lte("timestamp", endOfDay.toISOString());
 
         if (checkLog && checkLog.length > 0) {
-            document.getElementById("qr-result-checkout").textContent = "✅ เช็คเอาท์ไปแล้ววันนี้ (บริษัทนี้)";
+            alert("✅ เช็คชื่อออกไปแล้ววันนี้"); 
             return;
         }
 
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(async (position) => {
-                const latitude = position.coords.latitude;
-                const longitude = position.coords.longitude;
+        const { data: checkins } = await supabase
+            .from("attendance_log")
+            .select("*")
+            .eq("employee_id", employeeId)
+            .eq("check_type", "check-in")
+            .eq("company", selectedCompany)
+            .gte("timestamp", startOfDay.toISOString())
+            .lte("timestamp", endOfDay.toISOString());
 
-                const officeLat = 13.791099492729726;
-                const officeLon = 100.49673497164436;
-                const distance = getDistanceFromLatLonInMeters(latitude, longitude, officeLat, officeLon);
-                const locationLabel = distance <= 500
-                    ? "office"
-                    : `${latitude.toFixed(6)},${longitude.toFixed(6)}`;
+        const { data: checkouts } = await supabase
+            .from("attendance_log")
+            .select("*")
+            .eq("employee_id", employeeId)
+            .eq("check_type", "check-out")
+            .eq("company", selectedCompany)
+            .gte("timestamp", startOfDay.toISOString())
+            .lte("timestamp", endOfDay.toISOString());
 
-                const { error } = await supabase.from("attendance_log").insert([
-                    {
-                        check_type: "check-out",
-                        timestamp: new Date().toISOString(),
-                        employee_id: employeeId,
-                        location: locationLabel,
-                        latitude: latitude.toString(),
-                        longitude: longitude.toString(),
-                        company: selectedCompany
-                    }
-                ]);
-
-                if (error) {
-                    document.getElementById("qr-result-checkout").textContent = "❌ บันทึกไม่สำเร็จ";
-                } else {
-                    document.getElementById("qr-result-checkout").textContent = "✅ เช็คเอาท์สำเร็จ!";
-                }
-            }, () => {
-                document.getElementById("qr-result-checkout").textContent = "❌ ไม่สามารถดึงตำแหน่งได้";
-            });
-        } else {
-            document.getElementById("qr-result-checkout").textContent = "❌ เบราว์เซอร์ไม่รองรับการดึงตำแหน่ง";
+        if ((checkins?.length || 0) <= (checkouts?.length || 0)) {
+            alert(`❌ ยังไม่มีการเช็คชื่อเข้าใหม่ของบริษัท ${selectedCompany}`);
+            return;
         }
-    }
 
-    async function stopScan() {
-        if (qrScannerRef.current) {
-            try {
-                await qrScannerRef.current.stop();
-                document.getElementById("qr-result-checkout").textContent = "❌ การสแกนถูกหยุด";
-            } catch (err) {
-                console.error("เกิดข้อผิดพลาดในการหยุดการสแกน:", err);
+
+        const { error } = await supabase.from("attendance_log").insert([
+            {
+                check_type: "check-out",
+                timestamp,
+                employee_id: employeeId,
+                location: "online",    
+                latitude: null,
+                longitude: null,
+                company: selectedCompany
             }
+        ]);
+
+        if (error) {
+            alert("❌ บันทึกไม่สำเร็จ");
+        } else {
+            alert("✅ เช็คชื่อออกออนไลน์สำเร็จ!");
         }
     }
+
 
     const showSection = (id) => {
         const sections = document.querySelectorAll('.section');
@@ -172,7 +261,7 @@ function CheckOutPage() {
                     <p>กรุณาสแกน QR Code ที่ได้รับจากแอดมินเพื่อเช็คชื่อออก</p>
 
                     <div className="mb-3">
-                        <label htmlFor="companySelect" className="form-label">เลือกบริษัทที่เข้าทำงานวันนี้</label>
+                        <label htmlFor="companySelect" className="form-label">เลือกบริษัทที่ออกทำงานวันนี้</label>
                         <select
                             id="companySelect"
                             className="form-select"
@@ -182,7 +271,7 @@ function CheckOutPage() {
                             <option value="LL">LL</option>
                             <option value="Meta">Meta</option>
                             <option value="Med">Med</option>
-                            <option value="IRE">IRE</option>
+                            <option value="W2D">W2D</option>
                             <option value="EDTech">EDTech</option>
                         </select>
                     </div>
@@ -190,6 +279,15 @@ function CheckOutPage() {
                     <div className="d-flex justify-content-center gap-2 flex-wrap">
                         <button className="btn btn-success mt-3" onClick={startScanCheckout}>เริ่มแสกน</button>
                         <button className="btn btn-danger mt-3" onClick={stopScan}>หยุดแสกน</button>
+                        <button
+                            className="btn btn-primary mt-3"
+                            onClick={() => {
+                                document.getElementById("qr-result-checkout").textContent = "กำลังบันทึก...";
+                                saveOnlineCheckout();
+                            }}
+                        >
+                            ลงเวลาออกแบบออนไลน์
+                        </button>
                     </div>
                     <div id="qr-reader-checkout" style={{ width: '250px', height: '250px' }}></div>
                     <div id="qr-result-checkout" className="mt-3 text-center"></div>

@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'; 
-import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import * as bootstrap from 'bootstrap';
 import { Html5Qrcode } from "html5-qrcode";
 import { supabase } from '../supabaseClient';
 import NavbarPage from './NavbarPage';
@@ -55,10 +53,9 @@ function CheckInPage() {
                     if (decodedText === todayCode) {
                         setHasScanned(true);
                         await qrScannerRef.current.stop();
-                        document.getElementById("qr-result").textContent = "✅ เช็คชื่อเข้าเรียบร้อย";
                         await saveCheckin();
                     } else {
-                        document.getElementById("qr-result").textContent = "❌ QR ไม่ถูกต้อง";
+                        alert("❌ QR ไม่ถูกต้อง");
                     }
                 },
                 (errorMessage) => {
@@ -83,7 +80,7 @@ function CheckInPage() {
             .single();
 
         if (empErr || !empData) {
-            document.getElementById("qr-result").innerHTML = "❌ ไม่พบรหัสพนักงาน";
+            alert("❌ ไม่พบรหัสพนักงาน");
             return;
         }
 
@@ -117,9 +114,10 @@ function CheckInPage() {
                 .single();
 
             if (!lastCheckOut) {
-                document.getElementById("qr-result").textContent = `❌ โปรดเช็คเอาท์จากบริษัทก่อนหน้า (${lastLog.company}) ก่อน!`;
+                alert(`❌ โปรดเช็คชื่อออกจากบริษัท (${lastLog.company}) ก่อน`);
                 return;
             }
+
         }
 
         if (navigator.geolocation) {
@@ -146,23 +144,92 @@ function CheckInPage() {
                 }]);
 
                 if (error) {
-                    document.getElementById("qr-result").textContent = "❌ บันทึกไม่สำเร็จ";
+                    alert("❌ บันทึกไม่สำเร็จ");
                 } else {
-                    document.getElementById("qr-result").textContent = "✅ เช็คอินสำเร็จ!";
+                    alert("✅ เช็คชื่อเข้าสำเร็จ!");
                 }
             }, () => {
-                document.getElementById("qr-result").textContent = "❌ ไม่สามารถดึงตำแหน่งได้";
+                alert("❌ ไม่สามารถดึงตำแหน่งได้");
             });
         } else {
-            document.getElementById("qr-result").textContent = "❌ เบราว์เซอร์ไม่รองรับการดึงตำแหน่ง";
+            alert("❌ เบราว์เซอร์ไม่รองรับการดึงตำแหน่ง");
         }
     }
+
+    async function saveOnlineCheckin() {
+        const timestamp = new Date().toISOString();
+        const { data: userData } = await supabase.auth.getUser();
+        const email = userData?.user?.email;
+
+        const { data: empData, error: empErr } = await supabase
+            .from("employees")
+            .select("employee_id")
+            .eq("email", email)
+            .single();
+
+        if (empErr || !empData) {
+            alert("❌ ไม่พบรหัสพนักงาน");
+            return;
+        }
+
+        const employeeId = empData.employee_id;
+        const today = new Date();
+        const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+        const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+
+        const { data: checkLog } = await supabase
+            .from("attendance_log")
+            .select("*")
+            .eq("employee_id", employeeId)
+            .eq("check_type", "check-in")
+            .gte("timestamp", startOfDay.toISOString())
+            .lte("timestamp", endOfDay.toISOString());
+
+        const lastLog = checkLog?.filter(log => !log.company || log.company !== selectedCompany)
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+
+        if (lastLog) {
+            const { data: lastCheckOut } = await supabase
+                .from("attendance_log")
+                .select("*")
+                .eq("employee_id", employeeId)
+                .eq("check_type", "check-out")
+                .eq("company", lastLog.company)
+                .gte("timestamp", startOfDay.toISOString())
+                .lte("timestamp", endOfDay.toISOString())
+                .order("timestamp", { ascending: false })
+                .limit(1)
+                .single();
+
+            if (!lastCheckOut) {
+                alert(`❌ โปรดเช็คชื่อออกจากบริษัท (${lastLog.company}) ก่อน`);
+                return;
+            }
+        }
+
+        const { error } = await supabase.from("attendance_log").insert([{
+            check_type: "check-in",
+            timestamp: new Date().toISOString(),
+            employee_id: employeeId,
+            location: "online",
+            latitude: null,
+            longitude: null,
+            company: selectedCompany
+        }]);
+
+        if (error) {
+            alert("❌ บันทึกไม่สำเร็จ");
+        } else {
+            alert("✅ เช็คชื่อเข้าสำเร็จ!");
+        }
+    }
+
 
     async function stopScan() {
         if (qrScannerRef.current) {
             try {
                 await qrScannerRef.current.stop();
-                document.getElementById("qr-result").textContent = "❌ การสแกนถูกหยุด";
+                alert("❌ การสแกนถูกหยุด");
             } catch (err) {
                 console.error("เกิดข้อผิดพลาดในการหยุดการสแกน:", err);
             }
@@ -195,7 +262,7 @@ function CheckInPage() {
                             <option value="LL">LL</option>
                             <option value="Meta">Meta</option>
                             <option value="Med">Med</option>
-                            <option value="IRE">IRE</option>
+                            <option value="W2D">W2D</option>
                             <option value="EDTech">EDTech</option>
                         </select>
                     </div>
@@ -203,6 +270,15 @@ function CheckInPage() {
                     <div className="d-flex justify-content-center gap-2 flex-wrap">
                         <button className="btn btn-success mt-3" onClick={startScan}>เริ่มแสกน</button>
                         <button className="btn btn-danger mt-3" onClick={stopScan}>หยุดแสกน</button>
+                        <button
+                            className="btn btn-primary mt-3"
+                            onClick={() => {
+                                document.getElementById("qr-result").textContent = "กำลังบันทึก...";
+                                saveOnlineCheckin();
+                            }}
+                            >
+                            ลงเวลาแบบออนไลน์
+                        </button>
                     </div>
                     <div id="qr-reader" style={{ width: '250px', height: '250px' }}></div>
                     <div id="qr-result" className="mt-3 text-center"></div>

@@ -105,7 +105,7 @@ const EditTimePage = () => {
                         <option value="LL">LL</option>
                         <option value="Meta">Meta</option>
                         <option value="Med">Med</option>
-                        <option value="IRE">IRE</option>
+                        <option value="W2D">W2D</option>
                         <option value="EDTech">EDTech</option>
                     </select>
                 </div>

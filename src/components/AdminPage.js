@@ -211,11 +211,11 @@ function AdminPage() {
       
         if (type === "check-in") {
           if (showCheckInQR) {
-            setShowCheckInQR(false);  // ปิด QR เดิม
+            setShowCheckInQR(false);  
           } else {
             setCheckInQRUrl(qrUrl);
             setShowCheckInQR(true);
-            setShowCheckOutQR(false); // ✅ ปิดอีกฝั่งอัตโนมัติ
+            setShowCheckOutQR(false); 
           }
         } else if (type === "check-out") {
           if (showCheckOutQR) {
@@ -223,7 +223,7 @@ function AdminPage() {
           } else {
             setCheckOutQRUrl(qrUrl);
             setShowCheckOutQR(true);
-            setShowCheckInQR(false); // ✅ ปิดอีกฝั่งอัตโนมัติ
+            setShowCheckInQR(false); 
           }
         }
       };

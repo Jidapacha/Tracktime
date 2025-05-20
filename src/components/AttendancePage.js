@@ -4,6 +4,8 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import { supabase } from '../supabaseClient';
 import NavbarPage from './NavbarPage';
 import '../cssfile/attendance.css'
+import Select from 'react-select';
+
 
 function AttendancePage() {
     const [checkType, setCheckType] = useState('check-in'); 
@@ -106,11 +108,18 @@ function AttendancePage() {
     setWorkSummary((totalMs / 1000 / 60 / 60).toFixed(2));
 
     const formatted = {};
-    Object.entries(companyTotals).forEach(([comp, ms]) => {
-        formatted[comp] = (ms / 1000 / 60 / 60).toFixed(2);
-    });
-    setCompanyHours(formatted);
-};
+        Object.entries(companyTotals).forEach(([comp, ms]) => {
+            formatted[comp] = (ms / 1000 / 60 / 60).toFixed(2);
+        });
+        setCompanyHours(formatted);
+    };
+
+    const selectOptions = employeeOptions
+    .filter(emp => emp.name && emp.username)
+    .map(emp => ({
+        value: emp.employee_id,
+        label: `${emp.name} (${emp.username})`
+    }));
 
 
 
@@ -195,18 +204,25 @@ function AttendancePage() {
                             <div className="summary-filter-wrapper">
                                 <div className="employee-filter">
                                     <label>เลือกพนักงาน:</label>
-                                    <select
-                                        className="form-select form-select-sm"
-                                        value={selectedEmployee}
-                                        onChange={(e) => setSelectedEmployee(e.target.value)}
-                                    >
-                                    <option value="all">-- กรุณาเลือก --</option>
-                                    {employeeOptions.map((emp) => (
-                                        <option key={emp.employee_id} value={emp.employee_id}>
-                                            {emp.name} ({emp.username})
-                                        </option>
-                                    ))}
-                                    </select>
+                                    
+                                    <Select 
+                                    isClearable
+                                    isSearchable
+                                    className="basic-single employee-select"
+                                    classNamePrefix="select"
+                                    placeholder="-- กรุณาเลือก --"
+                                    value={
+                                        selectedEmployee === 'all'
+                                        ? null
+                                        : selectOptions.find(opt => opt.value === parseInt(selectedEmployee))
+                                    }
+                                    onChange={(selected) =>
+                                        setSelectedEmployee(selected ? selected.value : 'all')
+                                    }
+                                    options={selectOptions}
+                                    />
+
+
                                 </div>
 
                                 <div className="month-filter">
@@ -233,7 +249,7 @@ function AttendancePage() {
                                     </span>
                                     </p>
                                     <ul className="attendance-summary">
-                                        {['LL', 'Meta', 'Med', 'IRE', 'EDTech'].map((comp) => (
+                                        {['LL', 'Meta', 'Med', 'W2D', 'EDTech'].map((comp) => (
                                             <li key={comp}>
                                             <span className="company-name">{comp}</span>
                                             <span className="company-hours">

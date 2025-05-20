@@ -65,21 +65,21 @@ function CalendarPage() {
       const employeeId = empData.employee_id;
 
 
-      // ✅ ดึงข้อมูลของพนักงานคนนั้น
+      
       const [leaveRes, holidayRes, attendanceRes] = await Promise.all([
         supabase
           .from('leave_days')
           .select('start_date, end_date, start_time, end_time, leave_type')
-          .eq('employee_id', employeeId), // ✅ กรองตาม employee_id
+          .eq('employee_id', employeeId), 
 
         supabase
           .from('holidays')
-          .select('date, title'), // ✅ ทุกคนใช้ร่วมกัน
+          .select('date, title'), 
 
         supabase
           .from('attendance_log')
-          .select('timestamp, check_type')
-          .eq('employee_id', employeeId), // ✅ เฉพาะคนนี้
+          .select('timestamp, check_type, company')
+          .eq('employee_id', employeeId), 
       ]);
 
 
@@ -114,17 +114,40 @@ function CalendarPage() {
         dayTypes[date].push('holiday');
       });
 
+      const attendanceGroupedByDate = {};
+
+
       attendanceRes.data.forEach(item => {
-        if (item.check_type.includes('check-in')) {
-          const localDate = new Date(item.timestamp);
-          const dateStr = `${localDate.getFullYear()}-${String(localDate.getMonth() + 1).padStart(2, '0')}-${String(localDate.getDate()).padStart(2, '0')}`;
+        const localDate = new Date(item.timestamp);
+        const dateStr = `${localDate.getFullYear()}-${String(localDate.getMonth() + 1).padStart(2, '0')}-${String(localDate.getDate()).padStart(2, '0')}`;
+
+        if (!attendanceGroupedByDate[dateStr]) {
+          attendanceGroupedByDate[dateStr] = { checkin: 0, checkout: 0 };
+        }
+
+        if (item.check_type === 'check-in') {
+          attendanceGroupedByDate[dateStr].checkin++;
+        }
+        if (item.check_type === 'check-out') {
+          attendanceGroupedByDate[dateStr].checkout++;
+        }
+
+        if (!dayTypes[dateStr]) dayTypes[dateStr] = [];
+        if (item.check_type === 'check-in' && !dayTypes[dateStr].includes('workday')) {
+          dayTypes[dateStr].push('workday');
+        }
+      });
+
+      Object.entries(attendanceGroupedByDate).forEach(([dateStr, counts]) => {
+        if (counts.checkin > 0 && counts.checkout > 0) {
           if (!dayTypes[dateStr]) dayTypes[dateStr] = [];
-          if (!dayTypes[dateStr].includes('workday')) {
-            dayTypes[dateStr].push('workday');
+          if (!dayTypes[dateStr].includes('complete')) {
+            dayTypes[dateStr].push('complete');
           }
         }
       });
 
+      
       const calendar = new Calendar(calendarEl, {
         plugins: [dayGridPlugin, interactionPlugin],
         initialView: 'dayGridMonth',
@@ -170,82 +193,135 @@ function CalendarPage() {
         
 
         dateClick: function (info) {
-          console.log('👉 วันที่ถูกคลิก:', info.dateStr); 
+          document.querySelectorAll('.fc-daygrid-day').forEach(el => {
+            el.classList.remove('selected-day');
+          });
+          const clickedCell = info.dayEl;
+          if (clickedCell) {
+            clickedCell.classList.add('selected-day');
+          }
+
+
           const clickedDate = info.dateStr;
-          const types = dayTypes[clickedDate] || [];   
-        
+
+          const types = dayTypes[clickedDate] || [];
+
           const descriptionMap = {
             leave: 'วันลา',
             holiday: 'วันหยุด',
-            workday: 'เข้าทำงาน',
+            workday: 'วันทำงาน',
             mondayHoliday: 'วันหยุดประจำบริษัท',
           };
-        
-          const readable = types.length > 0 ? types.map(type => descriptionMap[type] || type).join(', ') : 'ไม่มีข้อมูล';
-        
+
+          const readable = types.length > 0
+            ? types.map(type => descriptionMap[type] || type).join(', ')
+            : 'ไม่มีข้อมูล';
+
           const holiday = holidayRes.data.find(h => h.date === clickedDate);
           const holidayTitle = holiday ? holiday.title : null;
-        
+
+          const attendanceForDate = attendanceRes.data.filter(item => item.timestamp.startsWith(clickedDate));
+
+          const formatTime = (timestamp) => new Date(timestamp).toLocaleTimeString('th-TH', {
+            hour: '2-digit',
+            minute: '2-digit',
+          });
+
+          const dateObj = new Date(clickedDate);
+          const day = dateObj.toLocaleDateString('th-TH', { day: 'numeric' });
+          const month = dateObj.toLocaleDateString('th-TH', { month: 'long' });
+          const year = dateObj.getFullYear(); 
+
+          const thaiDate = `${day} ${month} ${year}`;
+
+          document.querySelectorAll('.fc-daygrid-day').forEach(el => {
+            el.classList.remove('selected-day');
+          });
+
+
+          let checkDetails = "";
+
+          const dateLogs = attendanceForDate.sort((a, b) =>
+            new Date(a.timestamp) - new Date(b.timestamp)
+          );
+          const groupedByCompany = {};
+
+          dateLogs.forEach(log => {
+            const company = log.company || "ไม่ระบุ";
+            if (!groupedByCompany[company]) {
+              groupedByCompany[company] = { checkin: null, checkout: null };
+            }
+
+            if (log.check_type === "check-in") {
+              groupedByCompany[company].checkin = log.timestamp;
+            }
+            if (log.check_type === "check-out") {
+              groupedByCompany[company].checkout = log.timestamp;
+            }
+          });
+
+          Object.entries(groupedByCompany).forEach(([company, logs]) => {
+            const timeIn = logs.checkin ? formatTime(logs.checkin) : "ยังไม่ได้แสกนเข้า";
+            const timeOut = logs.checkout ? formatTime(logs.checkout) : "รอแสกนออก";
+
+            checkDetails += `
+              <div class="mb-2">
+                <p class="mb-1 time-entry">${timeIn} - ${timeOut}<span class="company-badge">${company}</span></p>
+              </div>
+            `;
+          });
+
+
           const detailsEl = document.getElementById('calendar-details');
           if (detailsEl) {
             detailsEl.innerHTML = `
-              <h5>📅 วันที่ ${clickedDate}</h5>
-              <p><strong>สถานะ:</strong> ${readable}</p>
+              <h5>📅 ${thaiDate}</h5>
+              <p class="mb-1 time-entry"><strong>สถานะ:</strong> ${readable}</p>
               ${holidayTitle ? `<p><strong>กิจกรรม/วันหยุด:</strong> ${holidayTitle}</p>` : ''}
+              ${checkDetails || '<p><em></em></p>'}
             `;
           } else {
             console.warn('❌ ไม่พบ calendar-details');
           }
         },
 
+
         datesSet: function (info) {
           Object.keys(dayTypes).forEach(date => {
             const d = parseDateLocal(date);
             if (d.getDay() === 1) {
-              dayTypes[date] = dayTypes[date].filter(type => type !== 'holiday');
+              dayTypes[date] = dayTypes[date].filter(type => type !== 'mondayHoliday');
               if (dayTypes[date].length === 0) delete dayTypes[date];
             }
           });
 
           markMondaysAsHoliday(dayTypes, info.start, new Date(info.end.getTime() - 1));
-          calendar.render();
+          calendarRef.current?.render();
 
-        },
+        }
       });
-
       
-      console.log(dayTypes);
       calendar.render();
       calendarRef.current = calendar;
-      
-      const today = new Date();
-      const todayStr = today.toISOString().split('T')[0];
-      const typesToday = dayTypes[todayStr] || [];
 
-      const descriptionMap = {
-        leave: 'วันลา',
-        holiday: 'วันหยุด',
-        workday: 'เข้าทำงาน',
-        mondayHoliday: 'วันหยุดประจำบริษัท',
-      };
+      const view = calendar.view;
+      markMondaysAsHoliday(dayTypes, view.currentStart, new Date(view.currentEnd.getTime() - 1));
+      calendar.render();
+      setTimeout(() => {
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0];
 
-      const readableToday = typesToday.length > 0
-        ? typesToday.map(type => descriptionMap[type] || type).join(', ')
-        : 'ไม่มีข้อมูล';
-
-      const holidayToday = holidayRes.data.find(h => h.date === todayStr);
-      const holidayTitleToday = holidayToday ? holidayToday.title : null;
-
-      const detailsEl = document.getElementById('calendar-details');
-      detailsEl.innerHTML = `
-        <h5>📅 วันที่ ${todayStr}</h5>
-        <p><strong>สถานะ:</strong> ${readableToday}</p>
-        ${holidayTitleToday ? `<p><strong>กิจกรรม/วันหยุด:</strong> ${holidayTitleToday}</p>` : ''}
-      `;
-
-    };
+        calendar.trigger('dateClick', {
+          date: today,
+          dateStr: todayStr,
+          allDay: true,
+          dayEl: document.querySelector(`[data-date="${todayStr}"]`),
+          jsEvent: null,
+          view: calendar.view
+        });
+      }, 50);
     
-
+    };
     loadCalendar();
   }, []);
 

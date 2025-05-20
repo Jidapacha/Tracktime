@@ -251,3 +251,30 @@ gap: 0.5rem;
 flex-wrap: nowrap;
 }
 }
+
+
+.select__control {
+  min-height: 32px !important;
+  font-size: 0.9rem;
+}
+
+.select__menu {
+  font-size: 0.9rem;
+}
+
+.employee-select .select__control {
+  min-width: 300px;
+  min-height: 38px;
+}
+.employee-select .select__input {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+@media (max-width: 561px) {
+  .employee-select .select__control {
+    width: 100% !important;
+    min-width: 200px !important;
+    font-size: 0.9rem;
+  }
+}
