@@ -75,7 +75,7 @@ const HomePage = () => {
 
               <div className="mb-4">
                 <h5>🔗 หัวข้อเพิ่ม</h5>
-                <div className="d-grid gap-2">
+                <div className="d-grid gap-2 additional-buttons">
                   <button className="btn btn-outline-primary" onClick={() => navigate('/calendar-page')}>📅 ปฏิทินกิจกรรม</button>
                   <button className="btn btn-outline-warning" onClick={() => navigate('/notifications')}>🔔 แจ้งเตือน</button>
                   <button className="btn btn-outline-info" onClick={() => navigate('/payroll')}>💸 สลิปเงินเดือน</button>

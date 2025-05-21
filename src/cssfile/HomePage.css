@@ -18,30 +18,36 @@
     margin-top: 6px;
   }
   
-  /* ปรับกล่องปุ่มให้เรียงในบรรทัดเดียวกัน */
   .checkin-checkout-wrapper {
     display: flex;
-    gap: 1rem;
+    gap: 5px;
     flex-wrap: wrap;
     justify-content: center;
     margin-top: 1rem;
+    margin-bottom: 1rem;
   }
 
-  /* ปรับขนาดปุ่มให้กว้างพอดี ไม่เต็ม 100% */
   .checkin-checkout-wrapper .btn {
     min-width: 140px;
     flex: 1 1 140px;
     max-width: 200px;
   }
 
-
-
   @media (min-width: 992px) {
     .main-content {
-      margin-left: 250px; /* เผื่อพื้นที่ sidebar */
+      margin-left: 250px;
     }
   }
 
+@media (max-width: 577px) {
+  .additional-buttons {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+  .additional-buttons .btn{
+    width: 800px;
+  }
+}
 
 
-  
