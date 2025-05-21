@@ -268,16 +268,16 @@ function CheckInPage() {
                     </div>
 
                     <div className="d-flex justify-content-center gap-2 flex-wrap">
-                        <button className="btn btn-success mt-3" onClick={startScan}>เริ่มแสกน</button>
-                        <button className="btn btn-danger mt-3" onClick={stopScan}>หยุดแสกน</button>
+                        <button className="btn btn-success" onClick={startScan}>เริ่มแสกน</button>
+                        <button className="btn btn-danger" onClick={stopScan}>หยุดแสกน</button>
                         <button
-                            className="btn btn-primary mt-3"
+                            className="btn btn-primary"
                             onClick={() => {
                                 document.getElementById("qr-result").textContent = "กำลังบันทึก...";
                                 saveOnlineCheckin();
                             }}
                             >
-                            ลงเวลาแบบออนไลน์
+                            ลงเวลาเข้าแบบออนไลน์
                         </button>
                     </div>
                     <div id="qr-reader" style={{ width: '250px', height: '250px' }}></div>

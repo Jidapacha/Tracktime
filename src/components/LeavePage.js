@@ -167,15 +167,22 @@ function LeavePage() {
                 )}
 
                 {history.map((leave, index) => (
-                  <li key={index} className="list-group-item">
-                    {mapLeaveType(leave.leave_type)}{' '}
-                    {leave.time_type === 'day'
-                      ? `${formatDate(leave.start_date)} - ${formatDate(leave.end_date)}`
-                      : `${formatDate(leave.start_date)} เวลา ${leave.start_time} - ${leave.end_time}`}
-                    <button className="btn btn-outline-secondary btn-status ms-2" disabled>
+                  <li className="list-group-item d-flex justify-content-between align-items-center flex-nowrap">
+                    <div className="text-truncate me-2" style={{ overflow: 'hidden' }}>
+                      {mapLeaveType(leave.leave_type)}{' '}
+                      {leave.time_type === 'day'
+                        ? `${formatDate(leave.start_date)} - ${formatDate(leave.end_date)}`
+                        : `${formatDate(leave.start_date)} เวลา ${leave.start_time} - ${leave.end_time}`}
+                    </div>
+                    <button
+                      className="btn btn-outline-secondary btn-status"
+                      disabled
+                    >
                       {mapStatus(leave.status)}
                     </button>
                   </li>
+
+
                 ))}
               </ul>
               </>

@@ -277,10 +277,10 @@ function CheckOutPage() {
                     </div>
 
                     <div className="d-flex justify-content-center gap-2 flex-wrap">
-                        <button className="btn btn-success mt-3" onClick={startScanCheckout}>เริ่มแสกน</button>
-                        <button className="btn btn-danger mt-3" onClick={stopScan}>หยุดแสกน</button>
+                        <button className="btn btn-success" onClick={startScanCheckout}>เริ่มแสกน</button>
+                        <button className="btn btn-danger" onClick={stopScan}>หยุดแสกน</button>
                         <button
-                            className="btn btn-primary mt-3"
+                            className="btn btn-primary"
                             onClick={() => {
                                 document.getElementById("qr-result-checkout").textContent = "กำลังบันทึก...";
                                 saveOnlineCheckout();

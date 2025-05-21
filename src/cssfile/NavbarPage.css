@@ -117,7 +117,9 @@
   color: white;
   padding: 1rem;
   transition: left 0.3s ease-in-out;
-  z-index: 1050;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
 }
 
 .mobile-sidebar.open {
@@ -215,3 +217,5 @@ button:active {
     padding-top: 56px; 
   }
 }
+
+

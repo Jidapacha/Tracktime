@@ -22,6 +22,7 @@
     margin: 0 auto;
     border: 2px solid #84b990;
     border-radius: 8px;
+    margin-top: 20px;
   }
   
   #qr-result,
@@ -33,17 +34,28 @@
   }
   
   .btn {
-   
     min-width: 120px;
-    margin-bottom: 15px;
+    margin-bottom: 8px;
     justify-content: center;
   }
   
   .button-wrapper {
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
-    margin-top: 15px;
+    margin-top: 10px;
   }
   
+
+  @media (max-width: 576px) {
+  .button-wrapper {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .btn {
+    width: 100%;
+    max-width: 250px;
+  }
+}

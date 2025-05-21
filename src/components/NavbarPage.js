@@ -58,10 +58,12 @@ function NavbarPage() {
         </div>
       </nav>
 
-      {/* Mobile Sidebar */}
+  
       <div className={`mobile-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
-        <span className="navbar-brand text-white fs-3">เมนู</span>
-        <button className="close-btn" onClick={() => setMobileMenuOpen(false)}><i class="fa-solid fa-xmark"></i></button>
+        <div className="mobile-sidebar-header">
+          <span className="navbar-brand text-white fs-3">เมนู</span>
+          <button className="close-btn" onClick={() => setMobileMenuOpen(false)}><i class="fa-solid fa-xmark"></i></button>
+        </div>
         <ul className="navbar-nav">
           <li className="nav-item">
             <button className="nav-link btn btn-link" onClick={() => navigate('/home')}>
