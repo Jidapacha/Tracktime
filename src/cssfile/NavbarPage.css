@@ -3,12 +3,16 @@
 }
 
 
-
 .navbar-custom {
   background-color: rgb(11, 11, 167) !important;
   color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-bottom: 2px solid rgb(14, 14, 125);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1100; 
 }
 
 .navbar-custom .nav-link,
@@ -203,4 +207,11 @@ button:active {
 
 .logout-btn {
   color: rgb(11, 11, 167) !important;
+}
+
+
+@media (max-width: 991px) {
+  .main-content {
+    padding-top: 56px; 
+  }
 }

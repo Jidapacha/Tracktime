@@ -1,10 +1,14 @@
-/* ฟอนต์อ่านง่ายทั่วทั้งหน้า */
+
 body, .main-content {
   font-family: 'Segoe UI', sans-serif;
   background-color: #ffffff;
   color: #212529;
 }
 
+
+.main-content {
+  padding-bottom: 50px;
+}
 
 .section{
     margin: 30px;
