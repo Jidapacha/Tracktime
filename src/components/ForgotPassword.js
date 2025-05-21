@@ -9,7 +9,7 @@ function ForgotPassword() {
 
   const handleReset = async () => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://tracktime.vercel.app/update-password',
+      redirectTo: 'https://tracktime-lemon.vercel.app/update-password',
     });
 
     if (error) {
