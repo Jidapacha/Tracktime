@@ -1,0 +1,91 @@
+.forgot-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #ffffff;
+}
+
+.forgot-card {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  min-width: 320px;
+  max-width: 400px;
+  width: 100%;
+}
+
+.forgot-card h4 {
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.forgot-card input {
+  height: 42px;
+  font-size: 16px;
+  margin-bottom: 20px; 
+}
+
+.forgot-btn {
+  display: block;           
+  margin: 20px auto;           
+  width: 70%;               
+  background-color: #198754;
+  color: white;
+  font-weight: 500;
+  border: none;
+  padding: 10px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+
+.forgot-btn:hover {
+  background-color: #157347;
+}
+
+.forgot-message {
+  margin-top: 10px;
+  font-size: 0.95rem;
+  color: #555;
+  text-align: center;
+}
+
+
+.btn-custom {
+  width: 100%;
+  background-color: #198754;
+  color: white;
+  font-weight: 500;
+  border: none;
+  padding: 10px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.btn-custom:hover {
+  background-color: #157347;
+}
+
+.text-success {
+  color: #198754;
+}
+
+.text-danger {
+  color: #dc3545;
+}
+
+.back-link {
+  display: block;
+  text-align: center;
+  margin-top: 16px;
+  color: #8894a7;
+  font-size: 0.95rem;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  color: #1d3e6f;
+}

@@ -51,7 +51,7 @@ function NavbarPage() {
       <nav className="navbar navbar-light navbar-custom d-lg-none w-100">
         <div className="container-fluid">
           <button className="navbar-toggler text-white" type="button" onClick={() => setMobileMenuOpen(true)}>
-            <span style={{ fontSize: '1.5rem' }}>☰</span>
+            <span style={{ fontSize: '1.5rem' }}><i class="fa-solid fa-bars"></i></span>
           </button>
           <i class="fa-solid fa-circle-user fa-2x" onClick={() => navigate('/profile')}></i>
   
@@ -61,7 +61,7 @@ function NavbarPage() {
       {/* Mobile Sidebar */}
       <div className={`mobile-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
         <span className="navbar-brand text-white fs-3">เมนู</span>
-        <button className="close-btn" onClick={() => setMobileMenuOpen(false)}> x</button>
+        <button className="close-btn" onClick={() => setMobileMenuOpen(false)}><i class="fa-solid fa-xmark"></i></button>
         <ul className="navbar-nav">
           <li className="nav-item">
             <button className="nav-link btn btn-link" onClick={() => navigate('/home')}>

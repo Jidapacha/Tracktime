@@ -146,8 +146,6 @@ function LeavePage() {
               </div>
 
               <table className="table leave-summary">
-
-
                 <thead>
                   <tr>
                     <th>ประเภท</th>

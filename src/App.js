@@ -13,6 +13,8 @@ import RequestPage from './components/RequestPage';
 import AttendancePage from './components/AttendancePage';
 import EditTimePage from './components/EditTimePage';
 import ProfilePage from './components/ProfilePage';
+import ForgotPassword from './components/ForgotPassword';
+import UpdatePassword from './components/UpdatePassword';
 
 function App() {
   return (
@@ -31,6 +33,8 @@ function App() {
         <Route path="/attendance-log" element={<AttendancePage />} />
         <Route path="/edit-time" element={<EditTimePage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/update-password" element={<UpdatePassword />} />
       </Routes>
     </Router>
   );

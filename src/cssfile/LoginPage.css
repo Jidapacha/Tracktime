@@ -68,3 +68,16 @@ body {
   margin-top: 15px;
   font-size: 14px;
 }
+
+.forgot-link {
+  font-size: 0.9rem;
+  color: #fd0d0d;
+  text-decoration: none;
+  margin-top: 2px;
+}
+
+.forgot-link:hover {
+  color: #a70b0b;
+  transform: scale(1.02);
+  transition: 0.2s ease;
+}

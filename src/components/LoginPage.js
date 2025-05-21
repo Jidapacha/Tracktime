@@ -1,6 +1,6 @@
 // src/components/LoginPage.js
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import '../cssfile/LoginPage.css';
 
@@ -63,6 +63,11 @@ const LoginPage = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+          </div>
+          <div className="mb-3 text-end">
+            <Link to="/forgot-password" className="forgot-link">
+              ลืมรหัสผ่าน?
+            </Link>
           </div>
           <button type="submit" className="btn-custom">เข้าสู่ระบบ</button>
         </form>
