@@ -2,9 +2,7 @@
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
   ],
-  "build": {
-    "env": {
-      "CI": "false"
-    }
-  }
+  "redirects": [],
+  "cleanUrls": true,
+  "trailingSlash": false
 }
