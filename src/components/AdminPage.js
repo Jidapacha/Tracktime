@@ -22,6 +22,7 @@ function AdminPage() {
     const [editFormData, setEditFormData] = useState({});
     const [employeeToDelete, setEmployeeToDelete] = useState(null);
     const [showAllEmployees, setShowAllEmployees] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const toggleAddForm = () => {
         setShowAddForm(prev => {
@@ -54,54 +55,45 @@ function AdminPage() {
     };
 
     const handleAddEmployee = async (e) => {
-        e.preventDefault();
-      
-        const name = document.getElementById('name').value;
-        const username = document.getElementById('username').value;
-        const email = document.getElementById('email').value;
-        const tel = document.getElementById('tel').value;
-        const role = document.getElementById('role').value;
-        const bank = document.getElementById('bank').value === "อื่นๆ"
-            ? document.getElementById('other-bank').value
-            : document.getElementById('bank').value;
-        const bank_number = document.getElementById('bank_number').value;
-      
-        const password = Math.random().toString(36).slice(-8);
-      
-        // 1. เพิ่มข้อมูลใน employees table
-        const { data, error } = await supabase.from('employees').insert([
-            {
-                name,
-                username,
-                email,
-                tel,
-                role,
-                bank,
-                bank_number,
-                password,          
-                special_role: null,  
-            }
-        ]);
-      
-        if (error) {
-            alert("เกิดข้อผิดพลาด: " + error.message);
-            console.error(error);
-            return;
-        }
-      
-        const { error: authError } = await supabase.auth.signUp({
-          email,
-          password,
-        });
+      e.preventDefault();
+      setIsSubmitting(true); 
 
-        if (authError) {
-          alert("เพิ่มพนักงานสำเร็จ แต่สร้างบัญชีผู้ใช้ไม่สำเร็จ: " + authError.message);
-        } else {
-          alert("✅ เพิ่มพนักงานเรียบร้อยแล้ว\nกรุณากด Comfirm your email ที่ส่งไปยังอีเมลของคุณก่อนเข้าสู่ระบบ");
-        }
-        e.target.reset();
-        await fetchEmployees();
+      const name = document.getElementById('name').value;
+      const username = document.getElementById('username').value;
+      const email = document.getElementById('email').value;
+      const tel = document.getElementById('tel').value;
+      const role = document.getElementById('role').value;
+      const bank = document.getElementById('bank').value === "อื่นๆ"
+          ? document.getElementById('other-bank').value
+          : document.getElementById('bank').value;
+      const bank_number = document.getElementById('bank_number').value;
+      const password = Math.random().toString(36).slice(-8);
+
+      const { data, error } = await supabase.from('employees').insert([
+        { name, username, email, tel, role, bank, bank_number, password, special_role: null }
+      ]);
+
+      if (error) {
+        alert("เกิดข้อผิดพลาด: " + error.message);
+        console.error(error);
+        setIsSubmitting(false);
+        return;
+      }
+
+      const { error: authError } = await supabase.auth.signUp({ email, password });
+
+      e.target.reset();
+
+      if (authError) {
+        alert("เพิ่มพนักงานสำเร็จ แต่สร้างบัญชีผู้ใช้ไม่สำเร็จ: " + authError.message);
+      } else {
+        alert("✅ เพิ่มพนักงานเรียบร้อยแล้ว\nกรุณากด Confirm your email ที่ส่งไปยังอีเมลของคุณก่อนเข้าสู่ระบบ");
+      }
+
+      await fetchEmployees();
+      setIsSubmitting(false); 
     };
+
 
     
 
@@ -319,8 +311,11 @@ function AdminPage() {
                                     <div className="col-md-4">
                                         <input type="text" className="form-control" id="bank_number" placeholder="เลขบัญชี" required />
                                     </div>
+                                    
                                     <div className="col-md-4">
-                                        <button type="submit" className="btn btn-success">✅ บันทึก</button>
+                                        <button type="submit" className="btn btn-success" disabled={isSubmitting}>
+                                          {isSubmitting ? '⏳ กำลังบันทึก...' : '✅ บันทึก'}
+                                        </button>
                                     </div>
                                 </form>
                             )}
