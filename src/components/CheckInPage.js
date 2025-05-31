@@ -10,6 +10,8 @@ function CheckInPage() {
     const [hasScanned, setHasScanned] = useState(false);
     const [selectedCompany, setSelectedCompany] = useState('LL');
     const qrScannerRef = useRef(null);
+    const [isScanning, setIsScanning] = useState(false);
+    const [isSavingOnline, setIsSavingOnline] = useState(false);
 
     useEffect(() => {
         if (!qrScannerRef.current) {
@@ -17,24 +19,10 @@ function CheckInPage() {
         }
     }, []);
 
-    function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
-        const R = 6371e3;
-        const φ1 = lat1 * Math.PI / 180;
-        const φ2 = lat2 * Math.PI / 180;
-        const Δφ = (lat2 - lat1) * Math.PI / 180;
-        const Δλ = (lon2 - lon1) * Math.PI / 180;
-
-        const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-                Math.cos(φ1) * Math.cos(φ2) *
-                Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-        return R * c;
-    }
 
     async function startScan() {
-        if (!qrScannerRef.current) return;
-
+        if (!qrScannerRef.current || isScanning) return;
+        setIsScanning(true);
         setHasScanned(false);
 
         try {
@@ -44,15 +32,14 @@ function CheckInPage() {
                     fps: 10,
                     qrbox: { width: 250, height: 250 }
                 },
-                async (decodedText, decodedResult) => {
+                async (decodedText) => {
                     if (hasScanned) return;
 
                     const todayCode = `qr-code-check-in-${new Date().toISOString().split('T')[0]}`;
-                    console.log("QR สแกนได้:", decodedText);
-
                     if (decodedText === todayCode) {
                         setHasScanned(true);
                         await qrScannerRef.current.stop();
+                        setIsScanning(false);
                         await saveCheckin();
                     } else {
                         alert("❌ QR ไม่ถูกต้อง");
@@ -63,8 +50,8 @@ function CheckInPage() {
                 }
             );
         } catch (err) {
-            console.error("เกิดข้อผิดพลาดในการสแกน:", err);
             await qrScannerRef.current.stop();
+            setIsScanning(false);
         }
     }
 
@@ -117,7 +104,6 @@ function CheckInPage() {
                 alert(`❌ โปรดเช็คชื่อออกจากบริษัท (${lastLog.company}) ก่อน`);
                 return;
             }
-
         }
 
         if (navigator.geolocation) {
@@ -125,21 +111,46 @@ function CheckInPage() {
                 const latitude = position.coords.latitude;
                 const longitude = position.coords.longitude;
 
-                const officeLat = 13.791099492729726;
-                const officeLon = 100.49673497164436;
-                const distance = getDistanceFromLatLonInMeters(latitude, longitude, officeLat, officeLon);
+                const bangphlatLat = 13.791118737099783;
+                const bangphlatLon = 100.49677053240012;
 
-                const locationLabel = distance <= 500
-                    ? "office"
-                    : `${latitude.toFixed(6)},${longitude.toFixed(6)}`;
+                const ladkrabangLat = 13.727466744643005;
+                const ladkrabangLon = 100.77170407186941;
+
+                function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
+                    const R = 6371000;
+                    const dLat = (lat2 - lat1) * Math.PI / 180;
+                    const dLon = (lon2 - lon1) * Math.PI / 180;
+                    const a =
+                        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                        Math.cos(lat1 * Math.PI / 180) *
+                        Math.cos(lat2 * Math.PI / 180) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                    return R * c;
+                }
+
+                let locationLabel = `${latitude.toFixed(6)},${longitude.toFixed(6)}`;
+
+                const distBangphlat = getDistanceFromLatLonInMeters(latitude, longitude, bangphlatLat, bangphlatLon);
+                const distLadkrabang = getDistanceFromLatLonInMeters(latitude, longitude, ladkrabangLat, ladkrabangLon);
+
+                if (distBangphlat <= 2000) {
+                    locationLabel = "สาขาบางพลัด";
+                } else if (distLadkrabang <= 2000) {
+                    locationLabel = "สาขาลาดกระบัง";
+                }
+
+                console.log("🔍 พิกัดปัจจุบัน:", latitude, longitude);
+                console.log("📏 ระยะห่างบางพลัด:", distBangphlat);
+                console.log("📏 ระยะห่างลาดกระบัง:", distLadkrabang);
+                console.log("📍 จะบันทึกว่า:", locationLabel);
 
                 const { error } = await supabase.from("attendance_log").insert([{
                     check_type: "check-in",
                     timestamp: new Date().toISOString(),
                     employee_id: employeeId,
                     location: locationLabel,
-                    latitude: latitude.toString(),
-                    longitude: longitude.toString(),
                     company: selectedCompany
                 }]);
 
@@ -154,9 +165,13 @@ function CheckInPage() {
         } else {
             alert("❌ เบราว์เซอร์ไม่รองรับการดึงตำแหน่ง");
         }
+
     }
 
     async function saveOnlineCheckin() {
+        if (isSavingOnline) return;
+        setIsSavingOnline(true);
+
         const timestamp = new Date().toISOString();
         const { data: userData } = await supabase.auth.getUser();
         const email = userData?.user?.email;
@@ -169,6 +184,7 @@ function CheckInPage() {
 
         if (empErr || !empData) {
             alert("❌ ไม่พบรหัสพนักงาน");
+            setIsSavingOnline(false);
             return;
         }
 
@@ -203,6 +219,7 @@ function CheckInPage() {
 
             if (!lastCheckOut) {
                 alert(`❌ โปรดเช็คชื่อออกจากบริษัท (${lastLog.company}) ก่อน`);
+                setIsSavingOnline(false);
                 return;
             }
         }
@@ -211,9 +228,7 @@ function CheckInPage() {
             check_type: "check-in",
             timestamp: new Date().toISOString(),
             employee_id: employeeId,
-            location: "online",
-            latitude: null,
-            longitude: null,
+            location: "ลงชื่อแบบออนไลน์",
             company: selectedCompany
         }]);
 
@@ -222,6 +237,8 @@ function CheckInPage() {
         } else {
             alert("✅ เช็คชื่อเข้าสำเร็จ!");
         }
+
+        setIsSavingOnline(false);
     }
 
 
@@ -268,16 +285,29 @@ function CheckInPage() {
                     </div>
 
                     <div className="d-flex justify-content-center gap-2 flex-wrap">
-                        <button className="btn btn-success" onClick={startScan}>เริ่มแสกน</button>
-                        <button className="btn btn-danger" onClick={stopScan}>หยุดแสกน</button>
+                        <button
+                            className="btn btn-success"
+                            onClick={startScan}
+                            disabled={isScanning}
+                        >
+                            {isScanning ? "กำลังสแกน..." : "เริ่มแสกน"}
+                        </button>
+                        <button
+                            className="btn btn-danger"
+                            onClick={stopScan}
+                            disabled={!isScanning}
+                        >
+                            หยุดแสกน
+                        </button>
                         <button
                             className="btn btn-primary"
                             onClick={() => {
                                 document.getElementById("qr-result").textContent = "กำลังบันทึก...";
                                 saveOnlineCheckin();
                             }}
-                            >
-                            ลงเวลาเข้าแบบออนไลน์
+                            disabled={isSavingOnline}
+                        >
+                            {isSavingOnline ? "กำลังลงเวลา..." : "ลงเวลาเข้าแบบออนไลน์"}
                         </button>
                     </div>
                     <div id="qr-reader" style={{ width: '250px', height: '250px' }}></div>

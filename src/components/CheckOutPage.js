@@ -12,6 +12,8 @@ function CheckOutPage() {
     const [hasScanned, setHasScanned] = useState(false);
     const [selectedCompany, setSelectedCompany] = useState('LL');
     const qrScannerRef = useRef(null);
+    const [isScanning, setIsScanning] = useState(false);
+    const [isSavingOnline, setIsSavingOnline] = useState(false);
 
     useEffect(() => {
         if (!qrScannerRef.current) {
@@ -19,24 +21,10 @@ function CheckOutPage() {
         }
     }, []);
 
-    function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
-        const R = 6371e3;
-        const φ1 = lat1 * Math.PI / 180;
-        const φ2 = lat2 * Math.PI / 180;
-        const Δφ = (lat2 - lat1) * Math.PI / 180;
-        const Δλ = (lon2 - lon1) * Math.PI / 180;
-
-        const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-                Math.cos(φ1) * Math.cos(φ2) *
-                Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-        return R * c;
-    }
 
     async function startScanCheckout() {
-        if (!qrScannerRef.current) return;
-
+        if (!qrScannerRef.current || isScanning) return;
+        setIsScanning(true);
         setHasScanned(false);
 
         try {
@@ -46,12 +34,10 @@ function CheckOutPage() {
                     fps: 10,
                     qrbox: { width: 250, height: 250 }
                 },
-                async (decodedText, decodedResult) => {
+                async (decodedText) => {
                     if (hasScanned) return;
 
                     const todayCode = `qr-code-check-out-${new Date().toISOString().split('T')[0]}`;
-                    console.log("QR สแกนได้:", decodedText);
-
                     if (decodedText === todayCode) {
                         setHasScanned(true);
                         await qrScannerRef.current.stop();
@@ -65,92 +51,118 @@ function CheckOutPage() {
                 }
             );
         } catch (err) {
-            console.error("เกิดข้อผิดพลาดในการสแกน:", err);
             await qrScannerRef.current.stop();
+            setIsScanning(false);
         }
     }
 
+
     async function saveCheckout() {
-    const timestamp = new Date().toISOString();
-    const { data: userData } = await supabase.auth.getUser();
-    const email = userData?.user?.email;
+        const timestamp = new Date().toISOString();
+        const { data: userData } = await supabase.auth.getUser();
+        const email = userData?.user?.email;
 
-    const { data: empData, error: empErr } = await supabase
-        .from("employees")
-        .select("employee_id")
-        .eq("email", email)
-        .single();
+        const { data: empData, error: empErr } = await supabase
+            .from("employees")
+            .select("employee_id")
+            .eq("email", email)
+            .single();
 
-    if (empErr || !empData) {
-        alert("❌ ไม่พบรหัสพนักงาน");
-        return;
+        if (empErr || !empData) {
+            alert("❌ ไม่พบรหัสพนักงาน");
+            return;
+        }
+
+        const employeeId = empData.employee_id;
+        const today = new Date();
+        const startOfDay = new Date(today);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(today);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const { data: checkins } = await supabase
+            .from("attendance_log")
+            .select("*")
+            .eq("employee_id", employeeId)
+            .eq("check_type", "check-in")
+            .eq("company", selectedCompany)
+            .gte("timestamp", startOfDay.toISOString())
+            .lte("timestamp", endOfDay.toISOString());
+
+        const { data: checkouts } = await supabase
+            .from("attendance_log")
+            .select("*")
+            .eq("employee_id", employeeId)
+            .eq("check_type", "check-out")
+            .eq("company", selectedCompany)
+            .gte("timestamp", startOfDay.toISOString())
+            .lte("timestamp", endOfDay.toISOString());
+
+        if ((checkins?.length || 0) <= (checkouts?.length || 0)) {
+            alert(`❌ ยังไม่มีการเช็คชื่อเข้าใหม่ของบริษัท ${selectedCompany}`);
+            return;
+        }
+
+        
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+
+                const bangphlatLat = 13.791118737099783;
+                const bangphlatLon = 100.49677053240012;
+
+                const ladkrabangLat = 13.727466744643005;
+                const ladkrabangLon = 100.77170407186941;
+
+                function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
+                        const R = 6371000;
+                        const dLat = (lat2 - lat1) * Math.PI / 180;
+                        const dLon = (lon2 - lon1) * Math.PI / 180;
+                        const a =
+                            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                            Math.cos(lat1 * Math.PI / 180) *
+                            Math.cos(lat2 * Math.PI / 180) *
+                            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                        return R * c;
+                    }
+                let locationLabel = `${latitude.toFixed(6)},${longitude.toFixed(6)}`;
+
+                const distBangphlat = getDistanceFromLatLonInMeters(latitude, longitude, bangphlatLat, bangphlatLon);
+                const distLadkrabang = getDistanceFromLatLonInMeters(latitude, longitude, ladkrabangLat, ladkrabangLon);
+
+                if (distBangphlat <= 2000) {
+                    locationLabel = "สาขาบางพลัด";
+                } else if (distLadkrabang <= 2000) {
+                    locationLabel = "สาขาลาดกระบัง";
+                }
+
+                console.log("🔍 พิกัดปัจจุบัน:", latitude, longitude);
+                console.log("📏 ระยะห่างบางพลัด:", distBangphlat);
+                console.log("📏 ระยะห่างลาดกระบัง:", distLadkrabang);
+                console.log("📍 จะบันทึกว่า:", locationLabel);
+
+                const { error } = await supabase.from("attendance_log").insert([{
+                    check_type: "check-out",
+                    timestamp: new Date().toISOString(),
+                    employee_id: employeeId,
+                    location: locationLabel,
+                    company: selectedCompany
+                }]);
+
+                if (error) {
+                    alert("❌ บันทึกไม่สำเร็จ");
+                } else {
+                    alert("✅ เช็คชื่อออกสำเร็จ!");
+                }
+            }, () => {
+                alert("❌ ไม่สามารถดึงตำแหน่งได้");
+            });
+        } else {
+            alert("❌ เบราว์เซอร์ไม่รองรับการดึงตำแหน่ง");
+        }
     }
-
-    const employeeId = empData.employee_id;
-    const today = new Date();
-    const startOfDay = new Date(today);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(today);
-    endOfDay.setHours(23, 59, 59, 999);
-
-    const { data: checkins } = await supabase
-        .from("attendance_log")
-        .select("*")
-        .eq("employee_id", employeeId)
-        .eq("check_type", "check-in")
-        .eq("company", selectedCompany)
-        .gte("timestamp", startOfDay.toISOString())
-        .lte("timestamp", endOfDay.toISOString());
-
-    const { data: checkouts } = await supabase
-        .from("attendance_log")
-        .select("*")
-        .eq("employee_id", employeeId)
-        .eq("check_type", "check-out")
-        .eq("company", selectedCompany)
-        .gte("timestamp", startOfDay.toISOString())
-        .lte("timestamp", endOfDay.toISOString());
-
-    if ((checkins?.length || 0) <= (checkouts?.length || 0)) {
-        alert(`❌ ยังไม่มีการเช็คชื่อเข้าใหม่ของบริษัท ${selectedCompany}`);
-        return;
-    }
-
-
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async (position) => {
-            const latitude = position.coords.latitude;
-            const longitude = position.coords.longitude;
-
-            const officeLat = 13.791099492729726;
-            const officeLon = 100.49673497164436;
-            const distance = getDistanceFromLatLonInMeters(latitude, longitude, officeLat, officeLon);
-            const locationLabel = distance <= 500
-                ? "office"
-                : `${latitude.toFixed(6)},${longitude.toFixed(6)}`;
-
-            const { error } = await supabase.from("attendance_log").insert([{
-                check_type: "check-out",
-                timestamp,
-                employee_id: employeeId,
-                location: locationLabel,
-                latitude: latitude.toString(),
-                longitude: longitude.toString(),
-                company: selectedCompany
-            }]);
-
-            if (error) {
-                alert("❌ บันทึกไม่สำเร็จ");
-            } else {
-                alert("✅ เช็คชื่อออกสำเร็จ!");
-            }
-        }, () => {
-            alert("❌ ไม่สามารถดึงตำแหน่งได้");
-        });
-    } else {
-        alert("❌ เบราว์เซอร์ไม่รองรับการดึงตำแหน่ง");
-    }
-}
 
 
     async function stopScan() {
@@ -165,6 +177,9 @@ function CheckOutPage() {
     }
 
     async function saveOnlineCheckout() {
+        if (isSavingOnline) return;
+        setIsSavingOnline(true);
+
         const timestamp = new Date().toISOString();
         const { data: userData } = await supabase.auth.getUser();
         const email = userData?.user?.email;
@@ -230,9 +245,7 @@ function CheckOutPage() {
                 check_type: "check-out",
                 timestamp,
                 employee_id: employeeId,
-                location: "online",    
-                latitude: null,
-                longitude: null,
+                location: "ลงชื่อแบบออนไลน์",    
                 company: selectedCompany
             }
         ]);
@@ -277,16 +290,29 @@ function CheckOutPage() {
                     </div>
 
                     <div className="d-flex justify-content-center gap-2 flex-wrap">
-                        <button className="btn btn-success" onClick={startScanCheckout}>เริ่มแสกน</button>
-                        <button className="btn btn-danger" onClick={stopScan}>หยุดแสกน</button>
+                        <button
+                            className="btn btn-success"
+                            onClick={startScanCheckout}
+                            disabled={isScanning}
+                        >
+                            {isScanning ? "กำลังสแกน..." : "เริ่มแสกน"}
+                        </button>
+                        <button
+                            className="btn btn-danger"
+                            onClick={stopScan}
+                            disabled={!isScanning}
+                        >
+                            หยุดแสกน
+                        </button>
                         <button
                             className="btn btn-primary"
                             onClick={() => {
                                 document.getElementById("qr-result-checkout").textContent = "กำลังบันทึก...";
                                 saveOnlineCheckout();
                             }}
+                            disabled={isSavingOnline}
                         >
-                            ลงเวลาออกแบบออนไลน์
+                            {isSavingOnline ? "กำลังลงเวลา..." : "ลงเวลาออกแบบออนไลน์"}
                         </button>
                     </div>
                     <div id="qr-reader-checkout" style={{ width: '250px', height: '250px' }}></div>
