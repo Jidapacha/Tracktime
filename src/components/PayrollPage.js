@@ -19,7 +19,7 @@ function PayrollPage() {
             <NavbarPage showSection={showSection} />
             <div className="main-content">
                 <div id="payroll" className="section">
-                    <h1 className="fw-bold"><i class="fa-solid fa-file-invoice-dollar"></i> สลิปออนไลน์</h1><hr />
+                    <h1 className="fw-bold"><i className="fa-solid fa-file-invoice-dollar"></i> สลิปออนไลน์</h1><hr />
                 </div>
             </div>
         </div>

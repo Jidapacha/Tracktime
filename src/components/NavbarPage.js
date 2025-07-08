@@ -51,9 +51,9 @@ function NavbarPage() {
       <nav className="navbar navbar-light navbar-custom d-lg-none w-100">
         <div className="container-fluid">
           <button className="navbar-toggler text-white" type="button" onClick={() => setMobileMenuOpen(true)}>
-            <span style={{ fontSize: '1.5rem' }}><i class="fa-solid fa-bars"></i></span>
+            <span style={{ fontSize: '1.5rem' }}><i className="fa-solid fa-bars"></i></span>
           </button>
-          <i class="fa-solid fa-circle-user fa-2x" onClick={() => navigate('/profile')}></i>
+          <i className="fa-solid fa-circle-user fa-2x" onClick={() => navigate('/profile')}></i>
   
         </div>
       </nav>
@@ -62,42 +62,42 @@ function NavbarPage() {
       <div className={`mobile-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
         <div className="mobile-sidebar-header">
           <span className="navbar-brand text-white fs-3">เมนู</span>
-          <button className="close-btn" onClick={() => setMobileMenuOpen(false)}><i class="fa-solid fa-xmark"></i></button>
+          <button className="close-btn" onClick={() => setMobileMenuOpen(false)}><i className="fa-solid fa-xmark"></i></button>
         </div>
         <ul className="navbar-nav">
           <li className="nav-item">
             <button className="nav-link btn btn-link" onClick={() => navigate('/home')}>
-              <i class="fa-solid fa-house"></i>
+              <i className="fa-solid fa-house"></i>
                หน้าหลัก
             </button>
           </li>
           <li className="nav-item">
             <button className="nav-link btn btn-link" onClick={() => navigate('/checkin')}>
-              <i class="fa-solid fa-right-to-bracket"></i>
+              <i className="fa-solid fa-right-to-bracket"></i>
               บันทึกเข้า
             </button>
           </li>
           <li className="nav-item">
             <button className="nav-link btn btn-link" onClick={() => navigate('/checkout')}>
-              <i class="fa-solid fa-right-from-bracket"></i>
+              <i className="fa-solid fa-right-from-bracket"></i>
               บันทึกออก
             </button>
           </li>
           <li className="nav-item">
             <button className="nav-link btn btn-link" onClick={() => navigate('/calendar-page')}>
-              <i class="fa-solid fa-calendar-days"></i>
+              <i className="fa-solid fa-calendar-days"></i>
               ปฏิทินกิจกรรม
             </button>
           </li>
           <li className="nav-item">
             <button className="nav-link btn btn-link" onClick={() => navigate('/notifications')}>
-              <i class="fa-solid fa-bell"></i>
+              <i className="fa-solid fa-bell"></i>
               แจ้งเตือน
             </button>
           </li>
           <li className="nav-item">
             <button className="nav-link btn btn-link" onClick={() => navigate('/payroll')}>
-              <i class="fa-solid fa-file-invoice-dollar"></i>
+              <i className="fa-solid fa-file-invoice-dollar"></i>
               สลิปออนไลน์
             </button>
           </li>
@@ -106,13 +106,13 @@ function NavbarPage() {
           </li>
           <li className="nav-item">
             <button className="nav-link btn btn-link" onClick={() => navigate('/leave-form')}>
-              <i class="fa-solid fa-file-lines"></i>
+              <i className="fa-solid fa-file-lines"></i>
               เพิ่มบันทึกการลา
             </button>
           </li>
           <li className="nav-item">
             <button className="nav-link btn btn-link" onClick={() => navigate('/edit-time')}>
-              <i class="fa-solid fa-clock"></i>
+              <i className="fa-solid fa-clock"></i>
               แก้ไขเวลางาน
             </button>
           </li>
@@ -122,19 +122,19 @@ function NavbarPage() {
             </li>
             <li className="nav-item">
               <button className="nav-link btn btn-link" onClick={() => navigate('/admin')}>
-                <i class="fa-solid fa-screwdriver-wrench"></i>
+                <i className="fa-solid fa-screwdriver-wrench"></i>
                 จัดการระบบ
               </button>
             </li>
             <li className="nav-item">
               <button className="nav-link btn btn-link" onClick={() => navigate('/request')}>
-                <i class="fa-solid fa-hourglass-start"></i>
+                <i className="fa-solid fa-hourglass-start"></i>
                 รายการรออนุมัติ
               </button>
             </li>
             <li className="nav-item">
               <button className="nav-link btn btn-link" onClick={() => navigate('/attendance-log')}>
-                <i class="fa-solid fa-chart-simple"></i>
+                <i className="fa-solid fa-chart-simple"></i>
                 ประวัติการทำงาน
               </button>
             </li>
@@ -149,7 +149,7 @@ function NavbarPage() {
       <div id="sidebar" className="sidebar-custom d-none d-lg-block p-3">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <span className="fs-3 text-white mb-0">เมนู</span>
-          <i class="fa-solid fa-circle-user fa-2x" onClick={() => navigate('/profile')}></i>
+          <i className="fa-solid fa-circle-user fa-2x" onClick={() => navigate('/profile')}></i>
         </div>
 
 
@@ -157,37 +157,37 @@ function NavbarPage() {
         <ul className="navbar-nav">
           <li className="nav-item">
             <button className="nav-link btn btn-link" onClick={() => navigate('/home')}>
-              <i class="fa-solid fa-house"></i>
+              <i className="fa-solid fa-house"></i>
                หน้าหลัก
             </button>
           </li>
           <li className="nav-item">
             <button className="nav-link btn btn-link" onClick={() => navigate('/checkin')}>
-              <i class="fa-solid fa-right-to-bracket"></i>
+              <i className="fa-solid fa-right-to-bracket"></i>
               บันทึกเข้า
             </button>
           </li>
           <li className="nav-item">
             <button className="nav-link btn btn-link" onClick={() => navigate('/checkout')}>
-              <i class="fa-solid fa-right-from-bracket"></i>
+              <i className="fa-solid fa-right-from-bracket"></i>
               บันทึกออก
             </button>
           </li>
           <li className="nav-item">
             <button className="nav-link btn btn-link" onClick={() => navigate('/calendar-page')}>
-              <i class="fa-solid fa-calendar-days"></i>
+              <i className="fa-solid fa-calendar-days"></i>
               ปฏิทินกิจกรรม
             </button>
           </li>
           <li className="nav-item">
             <button className="nav-link btn btn-link" onClick={() => navigate('/notifications')}>
-              <i class="fa-solid fa-bell"></i>
+              <i className="fa-solid fa-bell"></i>
               แจ้งเตือน
             </button>
           </li>
           <li className="nav-item">
             <button className="nav-link btn btn-link" onClick={() => navigate('/payroll')}>
-              <i class="fa-solid fa-file-invoice-dollar"></i>
+              <i className="fa-solid fa-file-invoice-dollar"></i>
               สลิปออนไลน์
             </button>
           </li>
@@ -196,13 +196,13 @@ function NavbarPage() {
           </li>
           <li className="nav-item">
             <button className="nav-link btn btn-link" onClick={() => navigate('/leave-form')}>
-              <i class="fa-solid fa-file-lines"></i>
+              <i className="fa-solid fa-file-lines"></i>
               เพิ่มบันทึกการลา
             </button>
           </li>
           <li className="nav-item">
             <button className="nav-link btn btn-link" onClick={() => navigate('/edit-time')}>
-              <i class="fa-solid fa-clock"></i>
+              <i className="fa-solid fa-clock"></i>
               แก้ไขเวลางาน
             </button>
           </li>
@@ -212,19 +212,19 @@ function NavbarPage() {
             </li>
             <li className="nav-item">
               <button className="nav-link btn btn-link" onClick={() => navigate('/admin')}>
-                <i class="fa-solid fa-screwdriver-wrench"></i>
+                <i className="fa-solid fa-screwdriver-wrench"></i>
                 จัดการระบบ
               </button>
             </li>
             <li className="nav-item">
               <button className="nav-link btn btn-link" onClick={() => navigate('/request')}>
-                <i class="fa-solid fa-hourglass-start"></i>
+                <i className="fa-solid fa-hourglass-start"></i>
                 รายการรออนุมัติ
               </button>
             </li>
             <li className="nav-item">
               <button className="nav-link btn btn-link" onClick={() => navigate('/attendance-log')}>
-                <i class="fa-solid fa-chart-simple"></i>
+                <i className="fa-solid fa-chart-simple"></i>
                 ประวัติการทำงาน
               </button>
             </li>

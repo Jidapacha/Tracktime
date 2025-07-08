@@ -270,7 +270,7 @@ function CheckOutPage() {
             <NavbarPage showSection={showSection}/>
             <div className="main-content">
                 <div id="checkout" className="section">
-                    <h1 className="fw-bold"><i class="fa-solid fa-right-from-bracket"></i> เช็คชื่อออก</h1><hr />
+                    <h1 className="fw-bold"><i className="fa-solid fa-right-from-bracket"></i> เช็คชื่อออก</h1><hr />
                     <p>กรุณาสแกน QR Code ที่ได้รับจากแอดมินเพื่อเช็คชื่อออก</p>
 
                     <div className="mb-3">

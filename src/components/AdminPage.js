@@ -262,7 +262,7 @@ function AdminPage() {
           <NavbarPage showSection={showSection} />
           <div className="main-content">
             <div id="admin" className="section">
-              <h1 className="fw-bold"><i class="fa-solid fa-screwdriver-wrench"></i> จัดการระบบ</h1><hr />
+              <h1 className="fw-bold"><i className="fa-solid fa-screwdriver-wrench"></i> จัดการระบบ</h1><hr />
                 <div className="mb-4">
                   <h4>👥 จัดการพนักงาน</h4>
                   <button className="btn btn-outline-primary me-2 mb-2" onClick={toggleAddForm}>➕ เพิ่มพนักงาน</button>

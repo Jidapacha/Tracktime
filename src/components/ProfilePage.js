@@ -178,7 +178,7 @@ function ProfilePage() {
             <NavbarPage showSection={showSection} />
             <div className="main-content">
                 <div id="profile" className="section">
-                    <h1 className="fw-bold"><i class="fa-solid fa-id-card"></i> ข้อมูลพนักงาน</h1><hr />
+                    <h1 className="fw-bold"><i className="fa-solid fa-id-card"></i> ข้อมูลพนักงาน</h1><hr />
 
                     {loading ? (
                         <p>กำลังโหลดข้อมูล...</p>

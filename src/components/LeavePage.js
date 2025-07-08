@@ -134,7 +134,7 @@ function LeavePage() {
       <NavbarPage showSection={showSection} />
       <div className="main-content">
         <div id="leave" className="section">
-            <h1 className="fw-bold"><i class="fa-solid fa-file-lines"></i> เพิ่มบันทึกการลา</h1><hr />
+            <h1 className="fw-bold"><i className="fa-solid fa-file-lines"></i> เพิ่มบันทึกการลา</h1><hr />
             
             {step === 'summary' && (
             <>
